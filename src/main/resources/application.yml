@@ -10,7 +10,7 @@ logging:
 # console 색상
 spring:
   profiles:
-    active: [ "database", "docs", "jwt"]
+    active: [ "database", "springdoc", "s3", "jwt" ]
   output:
     ansi:
       enabled: always
