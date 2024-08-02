@@ -9,8 +9,10 @@ import depth.mvp.ns.domain.auth.dto.request.SignUpReq;
 import depth.mvp.ns.domain.auth.token.dto.TokenDto;
 import depth.mvp.ns.domain.auth.token.domain.RefreshToken;
 import depth.mvp.ns.domain.auth.token.domain.repository.RefreshTokenRepository;
+import depth.mvp.ns.domain.s3.service.S3Uploader;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.domain.repository.UserRepository;
+import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.config.security.token.TokenProvider;
 import depth.mvp.ns.global.payload.ApiResponse;
 import depth.mvp.ns.global.payload.DefaultAssert;
@@ -24,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -36,18 +39,33 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    private final TokenProvider tokenProvider;
+    private final S3Uploader s3Uploader;
+
     @Transactional
-    public ResponseEntity<?> signUp(SignUpReq signUpReq){
-        DefaultAssert.isTrue(signUpReq.getPassword().equals(signUpReq.getCheckPassword()), "비밀번호가 서로 다릅니다.");
+    public ResponseEntity<?> signUp(SignUpReq signUpReq, boolean isDefault, Optional<MultipartFile> image){
+        DefaultAssert.isTrue(!userRepository.existsByUsername(signUpReq.getUsername()), "이미 존재하는 사용자입니다.");
+        DefaultAssert.isTrue(signUpReq.getPassword().equals(signUpReq.getCheckPassword()), "비밀번호가 일치하지 않습니다.");
+
+        String imageName;
+        String imageUrl;
+        if (isDefault) {
+            imageName = "default.png";  // 추후 다시 수정
+            imageUrl = "https://ns-s3-image-bucket.s3.amazonaws.com/default.png";
+        } else {
+            imageName = s3Uploader.uploadImage(image.get());
+            imageUrl = s3Uploader.getFullPath(imageName);
+        }
 
         User user = User.builder()
                 .username(signUpReq.getUsername())
                 .password(passwordEncoder.encode(signUpReq.getPassword()))
                 .nickname(signUpReq.getNickname())
                 // imageUrl, imageName
+                .imageName(imageName)
+                .imageUrl(imageUrl)
                 .build();
 
         userRepository.save(user);
@@ -128,6 +146,24 @@ public class AuthService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 오류 발생");
         }
     }
+
+    @Transactional
+    public ResponseEntity<?> signOut(CustomUserDetails customUserDetails) {
+        log.info("userDetails:" + customUserDetails);
+        Optional<RefreshToken> refreshToken = refreshTokenRepository.findByUsername(customUserDetails.getUsername());
+        DefaultAssert.isTrue(refreshToken.isPresent(), "이미 로그아웃 되었습니다");
+
+        refreshTokenRepository.delete(refreshToken.get());
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information("로그아웃 되었습니다.")
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+
 
 
     @Transactional

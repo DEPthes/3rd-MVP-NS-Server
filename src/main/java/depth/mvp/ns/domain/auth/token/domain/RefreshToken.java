@@ -1,12 +1,13 @@
 package depth.mvp.ns.domain.auth.token.domain;
 
+import depth.mvp.ns.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 
 @Entity
 @Getter
-public class RefreshToken {
+public class RefreshToken extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
