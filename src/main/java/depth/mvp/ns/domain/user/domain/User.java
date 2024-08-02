@@ -31,6 +31,9 @@ public class User extends BaseEntity {
 
     private boolean completeFirstPost = false;
 
+    @Enumerated(EnumType.STRING)
+    private final Role role = Role.USER;
+
     @Builder
     public User(String username, String password, String nickname, String imageUrl, String imageName) {
         this.username = username;
