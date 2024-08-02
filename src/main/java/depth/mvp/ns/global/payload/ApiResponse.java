@@ -14,14 +14,11 @@ public class ApiResponse {
     //정보를 object 형식으로 감싸서 표현합니다.
     private Object information;
 
-    private String message;
-
     public ApiResponse(){};
 
     @Builder
-    public ApiResponse(boolean check, Object information, String message) {
+    public ApiResponse(boolean check, Object information) {
         this.check = check;
         this.information = information;
-        this.message = message;
     }
 }
