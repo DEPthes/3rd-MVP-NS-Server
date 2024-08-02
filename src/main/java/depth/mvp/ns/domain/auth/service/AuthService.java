@@ -1,5 +1,8 @@
 package depth.mvp.ns.domain.auth.service;
 
+import depth.mvp.ns.domain.auth.dto.request.CheckNicknameReq;
+import depth.mvp.ns.domain.auth.dto.request.CheckUsernameReq;
+import depth.mvp.ns.domain.auth.dto.response.CheckDuplicateRes;
 import depth.mvp.ns.domain.auth.token.dto.RefreshTokenReq;
 import depth.mvp.ns.domain.auth.dto.request.SignInReq;
 import depth.mvp.ns.domain.auth.dto.request.SignUpReq;
@@ -49,9 +52,37 @@ public class AuthService {
 
         userRepository.save(user);
 
-        ApiResponse apiResponse = ApiResponse.builder().
-                check(true)
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
                 .information("회원가입이 완료되었습니다.")
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    // 아이디 중복 체크
+    public ResponseEntity<?> checkUsername(CheckUsernameReq usernameReq) {
+        boolean availableUsername = !userRepository.existsByUsername(usernameReq.getUsername());
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(CheckDuplicateRes.builder()
+                        .available(availableUsername)
+                        .build())
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    // 닉네임 중복 체크
+    public ResponseEntity<?> checkNickname(CheckNicknameReq nicknameReq) {
+        boolean availableNickname = !userRepository.existsByNickname(nicknameReq.getNickname());
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(CheckDuplicateRes.builder()
+                        .available(availableNickname)
+                        .build())
                 .build();
 
         return ResponseEntity.ok(apiResponse);
@@ -127,4 +158,5 @@ public class AuthService {
         // 토큰 발급
         return ResponseEntity.ok(tokenDto);
     }
+
 }
