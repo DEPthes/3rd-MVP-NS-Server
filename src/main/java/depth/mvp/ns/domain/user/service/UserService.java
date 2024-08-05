@@ -1,8 +1,10 @@
 package depth.mvp.ns.domain.user.service;
 
+import depth.mvp.ns.domain.user.domain.RankingType;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.domain.repository.UserRepository;
 import depth.mvp.ns.domain.user.dto.response.MyPageRes;
+import depth.mvp.ns.domain.user.dto.response.UserRankingRes;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.payload.ApiResponse;
 import depth.mvp.ns.global.payload.DefaultAssert;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -40,5 +43,9 @@ public class UserService {
                 .information(myPageRes)
                 .build();
         return ResponseEntity.ok(apiResponse);
+    }
+
+    public List<UserRankingRes> getRankingData(RankingType type) {
+        return userRepository.getTop3ByPointDesc(type);
     }
 }
