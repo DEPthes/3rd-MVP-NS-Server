@@ -21,7 +21,7 @@ public class Board extends BaseEntity {
 
     private String content;
 
-    private boolean isPublished;
+    private boolean isPublished = false;
 
     private int length;
 
