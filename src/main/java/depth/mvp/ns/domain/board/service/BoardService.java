@@ -4,6 +4,7 @@ import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.board.dto.request.PublishReq;
 import depth.mvp.ns.domain.board.dto.request.SaveDraftReq;
+import depth.mvp.ns.domain.board.dto.request.UpdateReq;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
 import depth.mvp.ns.domain.user.domain.User;
@@ -128,5 +129,37 @@ public class BoardService {
 
         return ResponseEntity.ok(apiResponse);
 
+    }
+    // 게시 글 수정
+    @Transactional
+    public ResponseEntity<?> updateBoard(CustomUserDetails userDetails, UpdateReq request) {
+        // 유효한 사용자 확인
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.USER_NOT_FOUND));
+
+        // 유효한 게시글 확인
+        Board board = boardRepository.findById(request.getBoardId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "게시글을 찾을 수 없습니다."));
+
+        // 제목 유효성 검사
+        DefaultAssert.isTrue(request.getTitle() != null && !request.getTitle().isEmpty(), "제목을 입력해야 합니다.");
+        DefaultAssert.isTrue(request.getTitle().length() <= 20, "제목은 20자 이내로 작성해야 합니다.");
+
+        // 내용 유효성 검사
+        DefaultAssert.isTrue(request.getContent() != null && !request.getContent().isEmpty(), "내용을 입력해야 합니다.");
+        DefaultAssert.isTrue(request.getContent().length() >= 100, "내용은 100자 이상이어야 합니다.");
+
+        board.setTitle(request.getTitle());
+        board.setContent(request.getContent());
+        board.setLength(request.getContent().length());
+
+        boardRepository.save(board);
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information("게시글이 수정되었습니다.")
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
     }
 }
