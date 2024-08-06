@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -82,8 +83,19 @@ public class BoardService {
         if (!user.isCompleteFirstPost()) {
             user.addPoint(5);
             user.updateCompleteFirstPost(true);
-            userRepository.save(user);
         }
+
+        //주제에 따른 포인트 부여
+        LocalDate today = LocalDate.now();
+        LocalDate themeDate = theme.getDate();
+
+        if(themeDate.isEqual(today)){
+            user.addPoint(3);
+        } else {
+            user.addPoint(2);
+        }
+
+        userRepository.save(user);
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
