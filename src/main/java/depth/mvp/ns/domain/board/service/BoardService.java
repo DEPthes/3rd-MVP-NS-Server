@@ -31,39 +31,23 @@ public class BoardService {
     private final ThemeRepository themeRepository;
 
     @Transactional
-    //게시글 임시 저장
+    // 게시글 임시 저장
     public ResponseEntity<?> saveDraft(CustomUserDetails userDetails, SaveDraftReq request) {
-        // 유효한 사용자 확인
-        User user = userRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new DefaultException(ErrorCode.USER_NOT_FOUND));
-
-        // 유효한 주제 확인
-        Theme theme = themeRepository.findById(request.getThemeId())
-                .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "주제를 찾을 수 없습니다."));
-
-        // 제목 유효성 검사
-        DefaultAssert.isTrue(request.getTitle() != null && !request.getTitle().isEmpty(), "제목을 입력해야 합니다.");
+        // 유효성 검사
+        User user = validateUser(userDetails);
+        Theme theme = validateTheme(request.getThemeId());
+        validateTitleForDraft(request.getTitle());
 
         Board board;
         if (request.getBoardId() != null) {
             // 기존 임시 저장 글이 있으면 글 업데이트
-            board = boardRepository.findById(request.getBoardId())
-                    .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "임시 저장된 게시글을 찾을 수 없습니다."));
-            board.setTitle(request.getTitle());
-            board.setContent(request.getContent());
-            board.setLength(request.getContent().length());
-            boardRepository.save(board);
+            board = validateBoard(request.getBoardId());
+            updateBoardFields(board, request.getTitle(), request.getContent());
         } else {
-            // 새로운 임시 저장 글 생성
-            board = Board.builder()
-                    .title(request.getTitle())
-                    .content(request.getContent())
-                    .isPublished(false)
-                    .length(request.getContent().length())
-                    .user(user)
-                    .theme(theme)
-                    .build();
+            board = createBoard(request.getTitle(), request.getContent(), false, user, theme);
         }
+
+        boardRepository.save(board);
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
@@ -74,43 +58,22 @@ public class BoardService {
 
     }
     @Transactional
-    //게시글 게시
+    // 게시글 게시
     public ResponseEntity<?> publishBoard(CustomUserDetails userDetails, PublishReq request) {
-        // 유효한 사용자 확인
-        User user = userRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new DefaultException(ErrorCode.USER_NOT_FOUND));
-
-        // 유효한 주제 확인
-        Theme theme = themeRepository.findById(request.getThemeId())
-                .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "주제를 찾을 수 없습니다."));
-
-        //제목 유효성 검사
-        DefaultAssert.isTrue(request.getTitle() != null && !request.getTitle().isEmpty(), "제목을 입력해야 합니다.");
-        DefaultAssert.isTrue(request.getTitle().length() <=20, "제목은 20자 이내로 작성해야 합니다.");
-
-        //내용 유효성 검사
-        DefaultAssert.isTrue(request.getContent() != null && !request.getContent().isEmpty(), "본문을 입력해야 합니다.");
-        DefaultAssert.isTrue(request.getContent().length() >= 100, "내용은 100자 이상이어야 합니다.");
+        // 유효성 검사
+        User user = validateUser(userDetails);
+        Theme theme = validateTheme(request.getThemeId());
+        validateTitle(request.getTitle());
+        validateContent(request.getContent());
 
         Board board;
         if (request.getBoardId() != null) {
             // 임시저장된 게시물을 게시할 경우 특정 게시물을 찾고 업데이트
-            board = boardRepository.findById(request.getBoardId())
-                    .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "게시물을 찾을 수 없습니다."));
-            board.setTitle(request.getTitle());
-            board.setContent(request.getContent());
+            board = validateBoard(request.getBoardId());
+            updateBoardFields(board, request.getTitle(), request.getContent());
             board.setPublished(true);
-            board.setLength(request.getContent().length());
         } else {
-            // 새로운 게시물 생성
-            board = Board.builder()
-                    .title(request.getTitle())
-                    .content(request.getContent())
-                    .isPublished(true)
-                    .length(request.getContent().length())
-                    .user(user)
-                    .theme(theme)
-                    .build();
+            board = createBoard(request.getTitle(), request.getContent(), true, user, theme);
         }
 
         boardRepository.save(board);
@@ -133,25 +96,13 @@ public class BoardService {
     // 게시 글 수정
     @Transactional
     public ResponseEntity<?> updateBoard(CustomUserDetails userDetails, UpdateReq request) {
-        // 유효한 사용자 확인
-        User user = userRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new DefaultException(ErrorCode.USER_NOT_FOUND));
+        // 유효성 검사
+        User user = validateUser(userDetails);
+        Board board = validateBoard(request.getBoardId());
+        validateTitle(request.getTitle());
+        validateContent(request.getContent());
 
-        // 유효한 게시글 확인
-        Board board = boardRepository.findById(request.getBoardId())
-                .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "게시글을 찾을 수 없습니다."));
-
-        // 제목 유효성 검사
-        DefaultAssert.isTrue(request.getTitle() != null && !request.getTitle().isEmpty(), "제목을 입력해야 합니다.");
-        DefaultAssert.isTrue(request.getTitle().length() <= 20, "제목은 20자 이내로 작성해야 합니다.");
-
-        // 내용 유효성 검사
-        DefaultAssert.isTrue(request.getContent() != null && !request.getContent().isEmpty(), "내용을 입력해야 합니다.");
-        DefaultAssert.isTrue(request.getContent().length() >= 100, "내용은 100자 이상이어야 합니다.");
-
-        board.setTitle(request.getTitle());
-        board.setContent(request.getContent());
-        board.setLength(request.getContent().length());
+        updateBoardFields(board, request.getTitle(), request.getContent());
 
         boardRepository.save(board);
 
@@ -162,4 +113,68 @@ public class BoardService {
 
         return ResponseEntity.ok(apiResponse);
     }
+    // 게시글 삭제
+    @Transactional
+    public ResponseEntity<?> deleteBoard(CustomUserDetails userDetails, Long boardId) {
+        // 유효성 검사
+        User user = validateUser(userDetails);
+        Board board = validateBoard(boardId);
+
+        boardRepository.delete(board);
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information("게시글이 삭제되었습니다.")
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    // 유효한 사용자 확인
+    private User validateUser(CustomUserDetails userDetails){
+        return userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.USER_NOT_FOUND));
+    }
+    // 유효한 주제 확인
+    private Theme validateTheme(Long themeId){
+        return themeRepository.findById(themeId)
+                .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "주제를 찾을 수 없습니다."));
+    }
+    // 유효한 게시글 확인
+    private Board validateBoard(Long boardId){
+        return boardRepository.findById(boardId)
+                .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "게시글을 찾을 수 없습니다."));
+    }
+    // 제목 유효성 검사 (임시 저장용)
+    private void validateTitleForDraft(String title) {
+        DefaultAssert.isTrue(title != null && !title.isEmpty(), "제목을 입력해야 합니다.");
+    }
+    // 제목 유효성 검사
+    private void validateTitle(String title){
+        DefaultAssert.isTrue(title != null && !title.isEmpty(), "제목을 입력해야 합니다.");
+        //DefaultAssert.isTrue(title.length() <= 20, "제목은 20자 이내로 작성해야 합니다.");
+    }
+    // 내용 유효성 검사
+    private void validateContent(String content){
+        DefaultAssert.isTrue(content != null && !content.isEmpty(), "내용을 입력해야 합니다.");
+        //DefaultAssert.isTrue(content.length() >= 100, "내용은 100자 이상 작성해야 합니다.");
+    }
+    // 게시글 필드 업데이트
+    private void updateBoardFields(Board board, String title, String content){
+        board.setTitle(title);
+        board.setContent(content);
+        board.setLength(content.length());
+    }
+    // 새로운 게시글 생성
+    private Board createBoard(String title, String content, boolean isPublished, User user, Theme theme){
+        return Board.builder()
+                .title(title)
+                .content(content)
+                .isPublished(isPublished)
+                .length(content.length())
+                .user(user)
+                .theme(theme)
+                .build();
+    }
+
 }
