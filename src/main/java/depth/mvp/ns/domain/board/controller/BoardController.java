@@ -6,6 +6,7 @@ import depth.mvp.ns.domain.board.dto.request.UpdateReq;
 import depth.mvp.ns.domain.board.service.BoardService;
 import depth.mvp.ns.global.config.security.token.CurrentUser;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,17 +18,17 @@ public class BoardController {
     private final BoardService boardService;
 
     @PostMapping("/draft")
-    public ResponseEntity<?> saveDraft(@CurrentUser CustomUserDetails userDetails, @RequestBody SaveDraftReq request) {
+    public ResponseEntity<?> saveDraft(@CurrentUser CustomUserDetails userDetails, @Valid @RequestBody SaveDraftReq request) {
         return boardService.saveDraft(userDetails, request);
     }
 
     @PostMapping("/publish")
-    public ResponseEntity<?> publishBoard(@CurrentUser CustomUserDetails userDetails, @RequestBody PublishReq request) {
+    public ResponseEntity<?> publishBoard(@CurrentUser CustomUserDetails userDetails, @Valid @RequestBody PublishReq request) {
         return boardService.publishBoard(userDetails, request);
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> updateBoard(@CurrentUser CustomUserDetails userDetails, @RequestBody UpdateReq request) {
+    public ResponseEntity<?> updateBoard(@CurrentUser CustomUserDetails userDetails, @Valid @RequestBody UpdateReq request) {
         return boardService.updateBoard(userDetails, request);
     }
 

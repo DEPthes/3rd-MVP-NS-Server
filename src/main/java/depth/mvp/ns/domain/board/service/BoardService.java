@@ -37,7 +37,6 @@ public class BoardService {
         // 유효성 검사
         User user = validateUser(userDetails);
         Theme theme = validateTheme(request.getThemeId());
-        validateTitleForDraft(request.getTitle());
 
         Board board;
         if (request.getBoardId() != null) {
@@ -64,8 +63,6 @@ public class BoardService {
         // 유효성 검사
         User user = validateUser(userDetails);
         Theme theme = validateTheme(request.getThemeId());
-        validateTitle(request.getTitle());
-        validateContent(request.getContent());
 
         Board board;
         if (request.getBoardId() != null) {
@@ -111,8 +108,6 @@ public class BoardService {
         // 유효성 검사
         User user = validateUser(userDetails);
         Board board = validateBoard(request.getBoardId());
-        validateTitle(request.getTitle());
-        validateContent(request.getContent());
 
         updateBoardFields(board, request.getTitle(), request.getContent());
 
@@ -147,36 +142,26 @@ public class BoardService {
         return userRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new DefaultException(ErrorCode.USER_NOT_FOUND));
     }
+
     // 유효한 주제 확인
     private Theme validateTheme(Long themeId){
         return themeRepository.findById(themeId)
                 .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "주제를 찾을 수 없습니다."));
     }
+
     // 유효한 게시글 확인
     private Board validateBoard(Long boardId){
         return boardRepository.findById(boardId)
                 .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "게시글을 찾을 수 없습니다."));
     }
-    // 제목 유효성 검사 (임시 저장용)
-    private void validateTitleForDraft(String title) {
-        DefaultAssert.isTrue(title != null && !title.isEmpty(), "제목을 입력해야 합니다.");
-    }
-    // 제목 유효성 검사
-    private void validateTitle(String title){
-        DefaultAssert.isTrue(title != null && !title.isEmpty(), "제목을 입력해야 합니다.");
-        //DefaultAssert.isTrue(title.length() <= 20, "제목은 20자 이내로 작성해야 합니다.");
-    }
-    // 내용 유효성 검사
-    private void validateContent(String content){
-        DefaultAssert.isTrue(content != null && !content.isEmpty(), "내용을 입력해야 합니다.");
-        //DefaultAssert.isTrue(content.length() >= 100, "내용은 100자 이상 작성해야 합니다.");
-    }
+
     // 게시글 필드 업데이트
     private void updateBoardFields(Board board, String title, String content){
         board.setTitle(title);
         board.setContent(content);
         board.setLength(content.length());
     }
+
     // 새로운 게시글 생성
     private Board createBoard(String title, String content, boolean isPublished, User user, Theme theme){
         return Board.builder()
