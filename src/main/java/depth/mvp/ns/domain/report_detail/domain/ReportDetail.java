@@ -6,6 +6,7 @@ import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -31,4 +32,12 @@ public class ReportDetail extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ReportType reportType;
+
+
+    @Builder
+    public ReportDetail(User user, Report report, ReportType reportType) {
+        this.user = user;
+        this.report = report;
+        this.reportType = reportType;
+    }
 }

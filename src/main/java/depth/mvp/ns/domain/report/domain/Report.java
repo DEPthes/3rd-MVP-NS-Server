@@ -18,22 +18,19 @@ public class Report extends BaseEntity {
     @Column(name = "report_id")
     private Long id;
 
-    private int total;
+    private int total; // 오늘 작성된 글의 총 갯수
 
-    private String wordCloud;
+    private String topWord;   // 사용자가 가장 많이 사용한 단어
 
-    private String topWord;   // 가장 많이 사용한 단어
-
-    private int count;    // 사용한 횟수
+    private int count;    // 사용한 횟수 ex) 107번 노출
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "theme_id")
     private Theme theme;
 
     @Builder
-    public Report(int total, String wordCloud, String topWord, int count, Theme theme) {
+    public Report(int total, String topWord, int count, Theme theme) {
         this.total = total;
-        this.wordCloud = wordCloud;
         this.topWord = topWord;
         this.count = count;
         this.theme = theme;
