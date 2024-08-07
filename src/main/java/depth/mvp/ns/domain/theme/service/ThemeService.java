@@ -43,35 +43,20 @@ public class ThemeService {
     // 주제 목록 조회
     public ResponseEntity<?> getThemeList() {
         List<Theme> themeList = themeRepository.findAll();
-        List<ThemeListRes> themeListRes = themeList.stream()
-                .map(theme -> {
-                    int boardCount = themeRepository.countBoardsByThemeId(theme.getId()); // 게시글 수 계산
-                    int likeCount = themeRepository.countLikesByThemeId(theme.getId());   //  주제 좋아요 수 계산
-
-                    return ThemeListRes.builder()
-                            .content(theme.getContent())
-                            .date(theme.getDate())
-                            .likeCount(likeCount)
-                            .boardCount(boardCount)
-                            .build();
-
-                }).collect(Collectors.toList());
-
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information(themeListRes)
-                .build();
-
-        return ResponseEntity.ok(apiResponse);
-
+        return buildThemeListResponse(themeList);
     }
+
     // 주제 발행일 최신순으로 정렬
     public ResponseEntity<?> getThemeSortedByDate() {
         List<Theme> themeList = themeRepository.findAllOrderByDateDesc();
+        return buildThemeListResponse(themeList);
+    }
+    // 주제 목록 처리 & 응답을 반환하는 메소드
+    private ResponseEntity<ApiResponse> buildThemeListResponse(List<Theme> themeList) {
         List<ThemeListRes> themeListRes = themeList.stream()
                 .map(theme -> {
                     int boardCount = themeRepository.countBoardsByThemeId(theme.getId()); // 게시글 수 계산
-                    int likeCount = themeRepository.countLikesByThemeId(theme.getId());   //  주제 좋아요 수 계산
+                    int likeCount = themeRepository.countLikesByThemeId(theme.getId());   // 주제 좋아요 수 계산
 
                     return ThemeListRes.builder()
                             .content(theme.getContent())
@@ -79,7 +64,6 @@ public class ThemeService {
                             .likeCount(likeCount)
                             .boardCount(boardCount)
                             .build();
-
                 }).collect(Collectors.toList());
 
         ApiResponse apiResponse = ApiResponse.builder()
