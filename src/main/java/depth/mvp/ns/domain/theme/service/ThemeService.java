@@ -51,6 +51,11 @@ public class ThemeService {
         List<Theme> themeList = themeRepository.findAllOrderByDateDesc();
         return buildThemeListResponse(themeList);
     }
+
+    public ResponseEntity<?> getThemeSortedLikeCount() {
+        List<Theme> themeList = themeRepository.findAllOrderByLikeCountDesc();
+        return buildThemeListResponse(themeList);
+    }
     // 주제 목록 처리 & 응답을 반환하는 메소드
     private ResponseEntity<ApiResponse> buildThemeListResponse(List<Theme> themeList) {
         List<ThemeListRes> themeListRes = themeList.stream()
@@ -73,4 +78,6 @@ public class ThemeService {
 
         return ResponseEntity.ok(apiResponse);
     }
+
+
 }

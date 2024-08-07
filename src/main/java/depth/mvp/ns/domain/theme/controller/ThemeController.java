@@ -26,4 +26,9 @@ public class ThemeController {
     public ResponseEntity<?> getThemeSortedByDate(){
         return themeService.getThemeSortedByDate();
     }
+
+    @GetMapping("/sorted/like-count")
+    public ResponseEntity<?> getThemeSortedLikeCount(){
+        return themeService.getThemeSortedLikeCount();
+    }
 }
