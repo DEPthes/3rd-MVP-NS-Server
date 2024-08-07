@@ -52,10 +52,18 @@ public class ThemeService {
         return buildThemeListResponse(themeList);
     }
 
-    public ResponseEntity<?> getThemeSortedLikeCount() {
+    // 주제 좋아요순으로 정렬
+    public ResponseEntity<?> getThemeSortedByLikeCount() {
         List<Theme> themeList = themeRepository.findAllOrderByLikeCountDesc();
         return buildThemeListResponse(themeList);
     }
+
+    // 주제 게시글순으로 정렬
+    public ResponseEntity<?> getThemesSortedByBoardCount() {
+        List<Theme> themeList = themeRepository.findAllOrderByBoardCountDesc();
+        return buildThemeListResponse(themeList);
+    }
+
     // 주제 목록 처리 & 응답을 반환하는 메소드
     private ResponseEntity<ApiResponse> buildThemeListResponse(List<Theme> themeList) {
         List<ThemeListRes> themeListRes = themeList.stream()
@@ -78,6 +86,7 @@ public class ThemeService {
 
         return ResponseEntity.ok(apiResponse);
     }
+
 
 
 }

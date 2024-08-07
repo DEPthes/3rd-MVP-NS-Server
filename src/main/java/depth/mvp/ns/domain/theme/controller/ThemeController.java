@@ -28,7 +28,12 @@ public class ThemeController {
     }
 
     @GetMapping("/sorted/like-count")
-    public ResponseEntity<?> getThemeSortedLikeCount(){
-        return themeService.getThemeSortedLikeCount();
+    public ResponseEntity<?> getThemeSortedByLikeCount(){
+        return themeService.getThemeSortedByLikeCount();
+    }
+
+    @GetMapping("/sorted/board-count")
+    public ResponseEntity<?> getThemesSortedByBoardCount(){
+        return themeService.getThemesSortedByBoardCount();
     }
 }
