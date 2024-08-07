@@ -65,4 +65,28 @@ public class ThemeService {
         return ResponseEntity.ok(apiResponse);
 
     }
+    // 주제 발행일 최신순으로 정렬
+    public ResponseEntity<?> getThemeSortedByDate() {
+        List<Theme> themeList = themeRepository.findAllOrderByDateDesc();
+        List<ThemeListRes> themeListRes = themeList.stream()
+                .map(theme -> {
+                    int boardCount = themeRepository.countBoardsByThemeId(theme.getId()); // 게시글 수 계산
+                    int likeCount = themeRepository.countLikesByThemeId(theme.getId());   //  주제 좋아요 수 계산
+
+                    return ThemeListRes.builder()
+                            .content(theme.getContent())
+                            .date(theme.getDate())
+                            .likeCount(likeCount)
+                            .boardCount(boardCount)
+                            .build();
+
+                }).collect(Collectors.toList());
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(themeListRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
 }

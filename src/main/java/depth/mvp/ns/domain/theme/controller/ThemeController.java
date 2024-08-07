@@ -21,4 +21,9 @@ public class ThemeController {
     public ResponseEntity<?> getThemeList(){
         return themeService.getThemeList();
     }
+
+    @GetMapping("/sorted/date")
+    public ResponseEntity<?> getThemeSortedByDate(){
+        return themeService.getThemeSortedByDate();
+    }
 }
