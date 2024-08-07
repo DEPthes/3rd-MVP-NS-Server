@@ -40,7 +40,10 @@ jobs:
           echo "${{ secrets.APPLICATION_DATABASE_YML }}" | base64 --decode > src/main/resources/application-database.yml
           echo "${{ secrets.APPLICATION_S3_YML }}" | base64 --decode > src/main/resources/application-s3.yml
           echo "${{ secrets.APPLICATION_JWT_YML }}" | base64 --decode > src/main/resources/application-jwt.yml
-          
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
     # (4) Gradle build (Test 제외)
     - name: Build with Gradle
       uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
