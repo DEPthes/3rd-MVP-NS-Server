@@ -8,7 +8,6 @@ import lombok.*;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Board extends BaseEntity {
 
@@ -43,5 +42,15 @@ public class Board extends BaseEntity {
         this.length = length;
         this.user = user;
         this.theme = theme;
+    }
+
+    public void updateBoard(String title, String content, int length){
+        this.title = title;
+        this.content = content;
+        this.length = length;
+    }
+
+    public void updateIsPublished(boolean isPublished){
+        this.isPublished = isPublished;
     }
 }

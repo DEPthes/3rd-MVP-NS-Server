@@ -42,7 +42,7 @@ public class BoardService {
         if (request.getBoardId() != null) {
             // 기존 임시 저장 글이 있으면 글 업데이트
             board = validateBoard(request.getBoardId());
-            updateBoardFields(board, request.getTitle(), request.getContent());
+            board.updateBoard(request.getTitle(),request.getContent(),request.getContent().length());
         } else {
             board = createBoard(request.getTitle(), request.getContent(), false, user, theme);
         }
@@ -68,8 +68,9 @@ public class BoardService {
         if (request.getBoardId() != null) {
             // 임시저장된 게시물을 게시할 경우 특정 게시물을 찾고 업데이트
             board = validateBoard(request.getBoardId());
-            updateBoardFields(board, request.getTitle(), request.getContent());
-            board.setPublished(true);
+            board.updateBoard(request.getTitle(), request.getContent(), request.getContent().length());
+            board.updateIsPublished(true);
+
         } else {
             board = createBoard(request.getTitle(), request.getContent(), true, user, theme);
         }
@@ -82,7 +83,7 @@ public class BoardService {
             user.updateCompleteFirstPost(true);
         }
 
-        //주제에 따른 포인트 부여
+        // 주제에 따른 포인트 부여
         LocalDate today = LocalDate.now();
         LocalDate themeDate = theme.getDate();
 
@@ -104,12 +105,12 @@ public class BoardService {
     }
     // 게시 글 수정
     @Transactional
-    public ResponseEntity<?> updateBoard(CustomUserDetails userDetails, UpdateReq request) {
+    public ResponseEntity<?> updateBoard(CustomUserDetails userDetails,Long boardId, UpdateReq request) {
         // 유효성 검사
         User user = validateUser(userDetails);
-        Board board = validateBoard(request.getBoardId());
+        Board board = validateBoard(boardId);
 
-        updateBoardFields(board, request.getTitle(), request.getContent());
+        board.updateBoard(request.getTitle(), request.getContent(), request.getContent().length());
 
         boardRepository.save(board);
 
@@ -153,13 +154,6 @@ public class BoardService {
     private Board validateBoard(Long boardId){
         return boardRepository.findById(boardId)
                 .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "게시글을 찾을 수 없습니다."));
-    }
-
-    // 게시글 필드 업데이트
-    private void updateBoardFields(Board board, String title, String content){
-        board.setTitle(title);
-        board.setContent(content);
-        board.setLength(content.length());
     }
 
     // 새로운 게시글 생성

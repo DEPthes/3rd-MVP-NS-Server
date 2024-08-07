@@ -27,12 +27,12 @@ public class BoardController {
         return boardService.publishBoard(userDetails, request);
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<?> updateBoard(@CurrentUser CustomUserDetails userDetails, @Valid @RequestBody UpdateReq request) {
-        return boardService.updateBoard(userDetails, request);
+    @PutMapping("/{boardId}")
+    public ResponseEntity<?> updateBoard(@CurrentUser CustomUserDetails userDetails, @PathVariable Long boardId, @Valid @RequestBody UpdateReq request) {
+        return boardService.updateBoard(userDetails, boardId, request);
     }
 
-    @DeleteMapping("/delete/{boardId}")
+    @DeleteMapping("/{boardId}")
     public ResponseEntity<?> deleteBoard(@CurrentUser CustomUserDetails userDetails, @PathVariable Long boardId) {
         return boardService.deleteBoard(userDetails, boardId);
     }
