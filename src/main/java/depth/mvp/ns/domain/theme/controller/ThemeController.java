@@ -16,4 +16,9 @@ public class ThemeController {
     public ResponseEntity<?> getTodayTheme(){
         return themeService.getTodayTheme();
     }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> getThemeList(){
+        return themeService.getThemeList();
+    }
 }
