@@ -59,6 +59,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/auth/**")
                         .permitAll()
+                        .requestMatchers("/api/v1/theme/today")
+                        .permitAll()
                         .anyRequest()
                         .authenticated());
 
