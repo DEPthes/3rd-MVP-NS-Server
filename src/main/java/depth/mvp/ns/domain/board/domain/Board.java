@@ -4,10 +4,7 @@ import depth.mvp.ns.domain.common.BaseEntity;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.user.domain.User;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
@@ -23,7 +20,7 @@ public class Board extends BaseEntity {
 
     private String content;
 
-    private boolean isPublished;
+    private boolean isPublished = false;
 
     private int length;
 
@@ -45,5 +42,15 @@ public class Board extends BaseEntity {
         this.length = length;
         this.user = user;
         this.theme = theme;
+    }
+
+    public void updateBoard(String title, String content, int length){
+        this.title = title;
+        this.content = content;
+        this.length = length;
+    }
+
+    public void updateIsPublished(boolean isPublished){
+        this.isPublished = isPublished;
     }
 }
