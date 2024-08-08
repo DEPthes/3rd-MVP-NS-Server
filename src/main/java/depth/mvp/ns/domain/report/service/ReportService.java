@@ -63,7 +63,6 @@ public class ReportService {
         int writtenBoardCount = boardList.size();
 
         Map<String, Integer> wordCount = new HashMap<>();
-        Board longestBoard = null; // 가장 길게 글 쓴 사람을 찾기 위한 변수
 
         // 워드 카운트해서 wordcount 디비에 저장 + 가장 많이 쓴 단어 report에 저장 + 몇 번 노출됐는지도 저장
         for (Board board : boardList) {
@@ -76,14 +75,10 @@ public class ReportService {
             for (String noun : nouns) {
                 wordCount.put(noun, wordCount.getOrDefault(noun, 0) + 1);
             }
-
-            // 가장 길게 글 쓴 사람 찾기
-            if (longestBoard == null || content.length() > longestBoard.getContent().length()) {
-                longestBoard = board;
-            }
-
-
         }
+
+        // 가장 길게 글 쓴 사람 찾기
+        Board longestBoard = boardRepository.findLongestBoardByTheme(theme);
 
         // 가장 많이 사용된 단어 찾기
         String topWord = wordCount.entrySet().stream()

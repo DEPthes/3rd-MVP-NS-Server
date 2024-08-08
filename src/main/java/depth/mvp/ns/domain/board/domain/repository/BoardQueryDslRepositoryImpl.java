@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.QBoard;
 import depth.mvp.ns.domain.board_like.domain.QBoardLike;
+import depth.mvp.ns.domain.theme.domain.Theme;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -29,5 +30,16 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
                 .orderBy(boardLike.count().desc())
                 .limit(3)
                 .fetch();
+    }
+
+    @Override
+    public Board findLongestBoardByTheme(Theme theme) {
+        return queryFactory
+                .select(board)
+                .from(board)
+                .where(board.theme.eq(theme))
+                .limit(1)
+                .orderBy(board.length.desc())
+                .fetchOne();
     }
 }
