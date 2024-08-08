@@ -25,6 +25,10 @@ public interface ThemeRepository extends JpaRepository<Theme, Long> {
 
     @Query("SELECT t FROM Theme t ORDER BY (SELECT COUNT(l) FROM ThemeLike l WHERE l.theme = t) DESC")
     List<Theme> findAllOrderByLikeCountDesc();
+
     @Query("SELECT t FROM Theme t ORDER BY (SELECT COUNT(b) FROM Board b WHERE b.theme = t) DESC")
     List<Theme> findAllOrderByBoardCountDesc();
+
+    @Query("SELECT t FROM Theme t WHERE t.content LIKE %:keyword%")
+    List<Theme> findByContentContaining(@Param("keyword") String keyword);
 }
