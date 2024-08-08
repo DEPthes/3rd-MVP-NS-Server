@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface ThemeRepository extends JpaRepository<Theme, Long> {
-    Optional<Theme> findByDate(LocalDate today);
+    Optional<Theme> findByDate(LocalDate data);
 }

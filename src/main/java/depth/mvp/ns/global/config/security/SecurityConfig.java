@@ -59,7 +59,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/auth/**")
                         .permitAll()
-                        .requestMatchers("/api/v1/report/generate")
+                        // 아래 두 라인을 합쳐 충돌을 해결했습니다.
+                        .requestMatchers("/api/v1/report/generate", "/api/v1/theme/today")
                         .permitAll()
                         .anyRequest()
                         .authenticated());
