@@ -4,7 +4,11 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
 public class TodayThemeRes {
     private String content; // 오늘의 주제
+    @Builder
+    public TodayThemeRes(String content){
+        this.content = content;
+    }
+
 }
