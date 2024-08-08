@@ -63,7 +63,7 @@ public class CloudImageGenerator {
             }
         }
 
-        // Draw words based on frequency
+
         for (WordCount wc : words) {
             int fontSize = minFontSize + (int) ((maxFontSize - minFontSize) * ((double) wc.getCount() / maxCount));
             Font font = new Font(fontFamily, Font.BOLD, fontSize);
@@ -73,7 +73,7 @@ public class CloudImageGenerator {
             Shape glyph = gv.getOutline();
             Rectangle bounds = glyph.getBounds();
 
-            // Ensure the word fits within the image bounds
+
             int maxAttempts = 100;
             boolean fitted = false;
             for (int i = 0; i < maxAttempts; i++) {
@@ -89,7 +89,7 @@ public class CloudImageGenerator {
                 }
             }
 
-            // Draw the word if fitted
+
             if (fitted) {
                 g.setColor(colorTheme.next());
                 g.fill(glyph);
