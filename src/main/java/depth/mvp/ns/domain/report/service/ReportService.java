@@ -10,6 +10,7 @@ import depth.mvp.ns.domain.report.domain.repository.WordCountRepository;
 import depth.mvp.ns.domain.report_detail.domain.ReportDetail;
 import depth.mvp.ns.domain.report_detail.domain.ReportType;
 import depth.mvp.ns.domain.report_detail.domain.repository.ReportDetailRepository;
+import depth.mvp.ns.domain.s3.service.S3Uploader;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,10 +22,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import scala.collection.Seq;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -40,6 +47,8 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final ReportDetailRepository reportDetailRepository;
     private final BoardLikeRepository boardLikeRepository;
+    private final CloudImageGenerator cloudImageGenerator;
+    private final S3Uploader s3Uploader;
 
     @Transactional
     public void generateNReport() {
@@ -87,16 +96,14 @@ public class ReportService {
 
         //=============================================================================================//
 
-
-
         Report report = Report.builder()
                 .total(writtenBoardCount)
                 .topWord(topWord)
                 .count(topWordCount)
                 .theme(theme)
+                .wordCloud(null)
                 .build();
 
-        reportRepository.save(report);
 
 
         // WordCount 객체 저장 -> 불필요 시 추후 삭제 할 수 있음.
@@ -108,6 +115,23 @@ public class ReportService {
                     .build();
             wordCountRepository.save(wordCountEntity);
         });
+
+
+        //=============================================================================================//
+        //워드 클라우드 생성
+        List<WordCount> wordCountEntities = wordCount.entrySet().stream()
+                .map(entry -> new WordCount(entry.getKey(), entry.getValue(), report))
+                .collect(Collectors.toList());
+
+        BufferedImage wordCloudImage = cloudImageGenerator.generateImage(wordCountEntities, System.currentTimeMillis());
+
+        String wordCloudUrl = uploadImageToS3(wordCloudImage, "wordcloud-" + UUID.randomUUID() + ".png");
+
+
+        report.updateWordCloud(wordCloudUrl);
+        reportRepository.save(report);
+
+        //=============================================================================================//
 
 
         // 가장 길게 글 쓴 사람 저장
@@ -141,7 +165,7 @@ public class ReportService {
         Seq<KoreanTokenizer.KoreanToken> tokens = OpenKoreanTextProcessorJava.tokenize(normalized);
         List<KoreanTokenJava> tokenList = OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens);
         List<String> nouns = tokenList.stream()
-                .filter(token -> token.getPos().toString().equals("Noun"))
+                .filter(token -> token.getPos().toString().equals("Noun") && token.getText().length() > 1)
                 .map(KoreanTokenJava::getText)
                 .collect(Collectors.toList());
 
@@ -149,11 +173,26 @@ public class ReportService {
         Pattern pattern = Pattern.compile("\\b[A-Za-z]+\\b");
         Matcher matcher = pattern.matcher(text);
         while (matcher.find()) {
-            nouns.add(matcher.group());
+            String word = matcher.group();
+            if (word.length() > 1) { // 한 글자 단어 제외
+                nouns.add(word);
+            }
         }
 
         System.out.println("Extracted Nouns: " + nouns);
         return nouns;
 
+    }
+
+    private String uploadImageToS3(BufferedImage image, String fileName) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            ImageIO.write(image, "png", baos);
+            byte[] bytes = baos.toByteArray();
+
+            // S3Uploader 클래스를 사용하여 S3에 이미지 업로드
+            return s3Uploader.uploadBufferedImage(new ByteArrayInputStream(bytes), fileName, bytes.length, "image/png");
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload image to S3", e);
+        }
     }
 }

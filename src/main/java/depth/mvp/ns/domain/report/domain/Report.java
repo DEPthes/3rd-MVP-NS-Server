@@ -24,15 +24,22 @@ public class Report extends BaseEntity {
 
     private int count;    // 사용한 횟수 ex) 107번 노출
 
+    private String wordCloud; // 워드클라우드 이미지 url
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "theme_id")
     private Theme theme;
 
     @Builder
-    public Report(int total, String topWord, int count, Theme theme) {
+    public Report(int total, String topWord, int count, String wordCloud, Theme theme) {
         this.total = total;
         this.topWord = topWord;
         this.count = count;
+        this.wordCloud = wordCloud;
         this.theme = theme;
+    }
+
+    public void updateWordCloud(String wordCloudUrl) {
+        this.wordCloud = wordCloudUrl;
     }
 }
