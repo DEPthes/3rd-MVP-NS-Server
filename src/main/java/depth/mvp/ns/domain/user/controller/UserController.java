@@ -16,9 +16,9 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<?> findUserInformation(@CurrentUser CustomUserDetails customUserDetails, @PathVariable Long userId) {
-        return userService.getMyInfo(customUserDetails, userId);
+    @GetMapping
+    public ResponseEntity<?> findUserInformation(@CurrentUser CustomUserDetails customUserDetails) {
+        return userService.getMyInfo(customUserDetails);
     }
 
     @GetMapping("/ranking")
