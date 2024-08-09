@@ -39,12 +39,12 @@ public class AuthController {
         return authService.signOut(userDetails);
     }
 
-    @GetMapping("/username")
+    @GetMapping("/check/username")
     public ResponseEntity<?> checkUsername(@RequestParam String username) {
         return authService.checkUsername(username);
     }
 
-    @GetMapping("/nickname")
+    @GetMapping("/check/nickname")
     public ResponseEntity<?> checkNickname(@RequestParam String nickname) {
         return authService.checkNickname(nickname);
     }
