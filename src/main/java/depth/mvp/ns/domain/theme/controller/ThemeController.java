@@ -1,8 +1,6 @@
 package depth.mvp.ns.domain.theme.controller;
 
 import depth.mvp.ns.domain.theme.service.ThemeService;
-import depth.mvp.ns.global.config.security.token.CurrentUser;
-import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,11 +36,6 @@ public class ThemeController {
     public ResponseEntity<?> getThemeSortedByBoardCount(){
         return themeService.getThemeSortedByBoardCount();
     }
-
-//    @GetMapping("/sorted/user-likes")
-//    public  ResponseEntity<?> getThemeSortedByUserLike(@CurrentUser CustomUserDetails customUserDetails){
-//        return themeService.getThemeSortedByUserLike();
-//    }
 
     @GetMapping("/search")
     public ResponseEntity<?> searchTheme(@RequestParam String keyword){

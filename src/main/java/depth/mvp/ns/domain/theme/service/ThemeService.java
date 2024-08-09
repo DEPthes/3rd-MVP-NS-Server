@@ -1,11 +1,8 @@
 package depth.mvp.ns.domain.theme.service;
-
-import depth.mvp.ns.domain.auth.dto.request.CheckUsernameReq;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
 import depth.mvp.ns.domain.theme.dto.response.ThemeListRes;
 import depth.mvp.ns.domain.theme.dto.response.TodayThemeRes;
-import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.error.DefaultException;
 import depth.mvp.ns.global.payload.ApiResponse;
 import depth.mvp.ns.global.payload.ErrorCode;
@@ -65,10 +62,6 @@ public class ThemeService {
         List<Theme> themeList = themeRepository.findAllOrderByBoardCountDesc();
         return buildThemeListResponse(themeList);
     }
-    // 주제 좋아요 누른 순으로 정렬(회원기준?)
-//    public ResponseEntity<?> getThemeSortedByUserLike(CustomUserDetails customUserDetails) {
-//
-//    }
 
     // 주제 검색
     public ResponseEntity<?> searchTheme(String keyword) {
