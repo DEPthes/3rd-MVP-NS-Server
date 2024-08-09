@@ -25,15 +25,13 @@ public class UserService {
     private final UserRepository userRepository;
 
     // 마이페이지 내 정보 조회
-    public ResponseEntity<?> getMyInfo(CustomUserDetails customUserDetails, Long userId) {
-        DefaultAssert.isTrue(Objects.equals(customUserDetails.getId(), userId), "유효한 접근이 아닙니다.");
-
-        Optional<User> userOp = userRepository.findById(userId);
+    public ResponseEntity<?> getMyInfo(CustomUserDetails customUserDetails) {
+        Optional<User> userOp = userRepository.findById(customUserDetails.getId());
         DefaultAssert.isTrue(userOp.isPresent(), "사용자가 존재하지 않습니다.");
         User user = userOp.get();
 
         MyPageRes myPageRes = MyPageRes.builder()
-                .userId(userId)
+                .userId(customUserDetails.getId())
                 .nickname(user.getNickname())
                 .imageUrl(user.getImageUrl())
                 .build();
