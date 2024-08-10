@@ -1,6 +1,8 @@
 package depth.mvp.ns.domain.theme.domain.repository;
 
 import depth.mvp.ns.domain.theme.domain.Theme;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,14 +23,14 @@ public interface ThemeRepository extends JpaRepository<Theme, Long> {
     int countLikesByThemeId(@Param("themeId") Long themeId);
 
     @Query("SELECT t FROM Theme t ORDER BY t.date DESC")
-    List<Theme> findAllOrderByDateDesc();
+    Page<Theme> findAllOrderByDate(Pageable pageable);
 
     @Query("SELECT t FROM Theme t ORDER BY (SELECT COUNT(l) FROM ThemeLike l WHERE l.theme = t) DESC")
-    List<Theme> findAllOrderByLikeCountDesc();
+    Page<Theme> findAllOrderByLikeCount(Pageable pageable);
 
     @Query("SELECT t FROM Theme t ORDER BY (SELECT COUNT(b) FROM Board b WHERE b.theme = t) DESC")
-    List<Theme> findAllOrderByBoardCountDesc();
+    Page<Theme> findAllOrderByBoardCount(Pageable pageable);
 
     @Query("SELECT t FROM Theme t WHERE t.content LIKE %:keyword%")
-    List<Theme> findByContentContaining(@Param("keyword") String keyword);
+    Page<Theme> findByContentContaining(@Param("keyword") String keyword,Pageable pageable);
 }

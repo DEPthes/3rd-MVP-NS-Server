@@ -7,6 +7,8 @@ import depth.mvp.ns.global.error.DefaultException;
 import depth.mvp.ns.global.payload.ApiResponse;
 import depth.mvp.ns.global.payload.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,38 +42,34 @@ public class ThemeService {
     }
 
     // 주제 목록 조회
-    public ResponseEntity<?> getThemeList() {
-        List<Theme> themeList = themeRepository.findAll();
-        return buildThemeListResponse(themeList);
-    }
+    public ResponseEntity<?> getThemeList(Pageable pageable, String sortBy) {
+        Page<Theme> themePage;
 
-    // 주제 발행일 최신순으로 정렬
-    public ResponseEntity<?> getThemeSortedByDate() {
-        List<Theme> themeList = themeRepository.findAllOrderByDateDesc();
-        return buildThemeListResponse(themeList);
-    }
+        switch (sortBy) {
+            case "likeCount":
+                themePage = themeRepository.findAllOrderByLikeCount(pageable);
+                break;
+            case "boardCount":
+                themePage = themeRepository.findAllOrderByBoardCount(pageable);
+                break;
+            case "date":
+            default:
+               themePage = themeRepository.findAllOrderByDate(pageable);
+                break;
+        }
 
-    // 주제 좋아요순으로 정렬
-    public ResponseEntity<?> getThemeSortedByLikeCount() {
-        List<Theme> themeList = themeRepository.findAllOrderByLikeCountDesc();
-        return buildThemeListResponse(themeList);
-    }
-
-    // 주제 게시글순으로 정렬
-    public ResponseEntity<?> getThemeSortedByBoardCount() {
-        List<Theme> themeList = themeRepository.findAllOrderByBoardCountDesc();
-        return buildThemeListResponse(themeList);
+        return buildThemeListResponse(themePage);
     }
 
     // 주제 검색
-    public ResponseEntity<?> searchTheme(String keyword) {
-        List<Theme> themeList = themeRepository.findByContentContaining(keyword);
-        return buildThemeListResponse(themeList);
+    public ResponseEntity<?> searchTheme(String keyword,Pageable pageable) {
+        Page<Theme> themePage = themeRepository.findByContentContaining(keyword, pageable);
+        return buildThemeListResponse(themePage);
     }
 
     // 주제 목록 처리 & 응답을 반환하는 메소드
-    private ResponseEntity<ApiResponse> buildThemeListResponse(List<Theme> themeList) {
-        List<ThemeListRes> themeListRes = themeList.stream()
+    private ResponseEntity<ApiResponse> buildThemeListResponse(Page<Theme> themePage) {
+        List<ThemeListRes> themeListRes = themePage.getContent().stream()
                 .map(theme -> {
                     int boardCount = themeRepository.countBoardsByThemeId(theme.getId()); // 게시글 수 계산
                     int likeCount = themeRepository.countLikesByThemeId(theme.getId());   // 주제 좋아요 수 계산
