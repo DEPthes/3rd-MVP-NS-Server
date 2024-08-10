@@ -4,6 +4,7 @@ import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
 import depth.mvp.ns.domain.theme.dto.response.ThemeListRes;
 import depth.mvp.ns.domain.theme.dto.response.TodayThemeRes;
 import depth.mvp.ns.global.error.DefaultException;
+import depth.mvp.ns.global.error.InvalidParameterException;
 import depth.mvp.ns.global.payload.ApiResponse;
 import depth.mvp.ns.global.payload.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindException;
+import org.springframework.validation.Errors;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -53,9 +56,12 @@ public class ThemeService {
                 themePage = themeRepository.findAllOrderByBoardCount(pageable);
                 break;
             case "date":
-            default:
-               themePage = themeRepository.findAllOrderByDate(pageable);
+                themePage = themeRepository.findAllByOrderByDateDesc(pageable);
                 break;
+            default:
+                Errors errors = new BindException(sortBy, "sortBy");
+                errors.rejectValue("sortBy", "invalid", "잘못된 정렬 파라미터입니다.");
+                throw new InvalidParameterException(errors);
         }
 
         return buildThemeListResponse(themePage);
@@ -75,6 +81,7 @@ public class ThemeService {
                     int likeCount = themeRepository.countLikesByThemeId(theme.getId());   // 주제 좋아요 수 계산
 
                     return ThemeListRes.builder()
+                            .themeId(theme.getId())
                             .content(theme.getContent())
                             .date(theme.getDate())
                             .likeCount(likeCount)

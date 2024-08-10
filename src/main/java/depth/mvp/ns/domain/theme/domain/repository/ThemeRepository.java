@@ -22,15 +22,13 @@ public interface ThemeRepository extends JpaRepository<Theme, Long> {
     @Query("SELECT COUNT(l) FROM ThemeLike l WHERE l.theme.id = :themeId")
     int countLikesByThemeId(@Param("themeId") Long themeId);
 
-    @Query("SELECT t FROM Theme t ORDER BY t.date DESC")
-    Page<Theme> findAllOrderByDate(Pageable pageable);
+    Page<Theme> findAllByOrderByDateDesc(Pageable pageable);
 
-    @Query("SELECT t FROM Theme t ORDER BY (SELECT COUNT(l) FROM ThemeLike l WHERE l.theme = t) DESC")
+    @Query("SELECT t FROM Theme t ORDER BY (SELECT COUNT(l) FROM ThemeLike l WHERE l.theme = t AND l.status = 'ACTIVE') DESC")
     Page<Theme> findAllOrderByLikeCount(Pageable pageable);
 
     @Query("SELECT t FROM Theme t ORDER BY (SELECT COUNT(b) FROM Board b WHERE b.theme = t) DESC")
     Page<Theme> findAllOrderByBoardCount(Pageable pageable);
 
-    @Query("SELECT t FROM Theme t WHERE t.content LIKE %:keyword%")
     Page<Theme> findByContentContaining(@Param("keyword") String keyword,Pageable pageable);
 }
