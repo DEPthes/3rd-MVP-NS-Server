@@ -19,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 
 import static org.springframework.security.config.Customizer.withDefaults;
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @RequiredArgsConstructor
 @Configuration
@@ -53,13 +54,27 @@ public class SecurityConfig {
                         .accessDeniedHandler(new JwtAccessDeniedHandler())
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/error", "/favicon.ico", "/**/*.png", "/**/*.gif", "/**/*.svg", "/**/*.jpg", "/**/*.html", "/**/*.css", "/**/*.js")
-                        .permitAll()
-                        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**")
-                        .permitAll()
-                        .requestMatchers("/auth/**")
-                        .permitAll()
-                        .requestMatchers("/api/v1/report/**", "/api/v1/theme/today")
+                        .requestMatchers(
+                                antMatcher("/"),
+                                antMatcher("/error"),
+                                antMatcher("/favicon.ico"),
+                                antMatcher("/**/*.png"),
+                                antMatcher("/**/*.gif"),
+                                antMatcher("/**/*.svg"),
+                                antMatcher("/**/*.jpg"),
+                                antMatcher("/**/*.html"),
+                                antMatcher("/**/*.css"),
+                                antMatcher("/**/*.js"),
+                                antMatcher("/swagger"),
+                                antMatcher("/swagger-ui.html"),
+                                antMatcher("/swagger-ui/**"),
+                                antMatcher("/api-docs"),
+                                antMatcher("/api-docs/**"),
+                                antMatcher("/v3/api-docs/**"),
+                                antMatcher("/auth/**"),
+                                antMatcher("/api/v1/report/**"),
+                                antMatcher("/api/v1/theme/today"),
+                                antMatcher("/api/v1/report/generate"))
                         .permitAll()
                         .anyRequest()
                         .authenticated());

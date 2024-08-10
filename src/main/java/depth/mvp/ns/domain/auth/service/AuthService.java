@@ -1,7 +1,5 @@
 package depth.mvp.ns.domain.auth.service;
 
-import depth.mvp.ns.domain.auth.dto.request.CheckNicknameReq;
-import depth.mvp.ns.domain.auth.dto.request.CheckUsernameReq;
 import depth.mvp.ns.domain.auth.dto.response.CheckDuplicateRes;
 import depth.mvp.ns.domain.auth.token.dto.RefreshTokenReq;
 import depth.mvp.ns.domain.auth.dto.request.SignInReq;
@@ -79,8 +77,8 @@ public class AuthService {
     }
 
     // 아이디 중복 체크
-    public ResponseEntity<?> checkUsername(CheckUsernameReq usernameReq) {
-        boolean availableUsername = !userRepository.existsByUsername(usernameReq.getUsername());
+    public ResponseEntity<?> checkUsername(String username) {
+        boolean availableUsername = !userRepository.existsByUsername(username);
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
@@ -93,8 +91,8 @@ public class AuthService {
     }
 
     // 닉네임 중복 체크
-    public ResponseEntity<?> checkNickname(CheckNicknameReq nicknameReq) {
-        boolean availableNickname = !userRepository.existsByNickname(nicknameReq.getNickname());
+    public ResponseEntity<?> checkNickname(String nickname) {
+        boolean availableNickname = !userRepository.existsByNickname(nickname);
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
