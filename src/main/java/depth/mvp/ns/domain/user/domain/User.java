@@ -50,4 +50,9 @@ public class User extends BaseEntity {
 
     public void updateCompleteFirstPost(boolean b) { this.completeFirstPost = b; }
 
+    public void updateImage(String imageUrl, String imageName) {
+        this.imageUrl = imageUrl;
+        this.imageName = imageName;
+    }
+
 }

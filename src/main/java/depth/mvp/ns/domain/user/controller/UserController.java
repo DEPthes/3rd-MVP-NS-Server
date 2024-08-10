@@ -8,6 +8,9 @@ import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -19,6 +22,14 @@ public class UserController {
     @GetMapping
     public ResponseEntity<?> findUserInformation(@CurrentUser CustomUserDetails customUserDetails) {
         return userService.getMyInfo(customUserDetails);
+    }
+
+    @PatchMapping("/profile")
+    public ResponseEntity<?> updateProfile(
+            @CurrentUser CustomUserDetails customUserDetails,
+            @RequestPart boolean isDefault,
+            @RequestPart Optional<MultipartFile> image) {
+        return userService.updateImage(customUserDetails, isDefault, image);
     }
 
     @GetMapping("/ranking")
