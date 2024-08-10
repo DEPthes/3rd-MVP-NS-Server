@@ -5,6 +5,9 @@ import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.board.dto.request.PublishReq;
 import depth.mvp.ns.domain.board.dto.request.SaveDraftReq;
 import depth.mvp.ns.domain.board.dto.request.UpdateReq;
+import depth.mvp.ns.domain.board_like.domain.BoardLike;
+import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
+import depth.mvp.ns.domain.common.Status;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
 import depth.mvp.ns.domain.user.domain.User;
@@ -28,6 +31,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class BoardService {
     private final BoardRepository boardRepository;
+    private final BoardLikeRepository boardLikeRepository;
     private final UserRepository userRepository;
     private final ThemeRepository themeRepository;
 
@@ -166,6 +170,42 @@ public class BoardService {
                 .user(user)
                 .theme(theme)
                 .build();
+    }
+
+    // 게시글 좋아요
+    @Transactional
+    public ResponseEntity<?> hitLikeButton(CustomUserDetails customUserDetails, Long boardId) {
+        User user = validateUser(customUserDetails);
+        Board board = validateBoard(boardId);
+
+        Optional<BoardLike> optionalBoardLike = boardLikeRepository.findByUserAndBoard(user, board);
+
+        BoardLike boardLike;
+        // 기존에 좋아요를 누르지 않은 경우
+        if (optionalBoardLike.isEmpty()) {
+            boardLike = BoardLike.builder()
+                    .user(user)
+                    .board(board)
+                    .build();
+            user.addPoint(1);
+        } else {
+            boardLike = optionalBoardLike.get();
+            // 좋아요 취소 시 포인트 회수
+            if (boardLike.getStatus() == Status.ACTIVE) {
+                user.addPoint(-1);
+                boardLike.updateStatus(Status.DELETE);
+            } else {
+                boardLike.updateStatus(Status.ACTIVE);
+            }
+        }
+
+        boolean isLiked = boardLike.getStatus() == Status.ACTIVE;
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(isLiked)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
     }
 
 }

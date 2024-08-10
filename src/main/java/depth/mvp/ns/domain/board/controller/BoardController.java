@@ -37,4 +37,9 @@ public class BoardController {
         return boardService.deleteBoard(userDetails, boardId);
     }
 
+    @PostMapping("/{boardId}/like")
+    public ResponseEntity<?> hitTheLikeButton(@CurrentUser CustomUserDetails customUserDetails, @PathVariable Long boardId) {
+        return boardService.hitLikeButton(customUserDetails, boardId);
+    }
+
 }
