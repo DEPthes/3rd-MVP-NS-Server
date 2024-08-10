@@ -43,7 +43,7 @@ public class UserController {
         return userService.updateNickname(customUserDetails, updateNicknameReq);
     }
 
-    @GetMapping("/check/password")
+    @PostMapping("/check/password")
     public ResponseEntity<?> checkPassword(
             @CurrentUser CustomUserDetails customUserDetails,
             @Valid @RequestBody CheckPasswordReq checkPasswordReq) {
