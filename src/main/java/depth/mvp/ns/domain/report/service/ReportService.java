@@ -1,5 +1,6 @@
 package depth.mvp.ns.domain.report.service;
 
+import com.querydsl.core.Tuple;
 import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
@@ -7,17 +8,21 @@ import depth.mvp.ns.domain.report.domain.Report;
 import depth.mvp.ns.domain.report.domain.WordCount;
 import depth.mvp.ns.domain.report.domain.repository.ReportRepository;
 import depth.mvp.ns.domain.report.domain.repository.WordCountRepository;
+import depth.mvp.ns.domain.report.dto.response.PrevReportRes;
+import depth.mvp.ns.domain.report.dto.response.ReportRes;
 import depth.mvp.ns.domain.report_detail.domain.ReportDetail;
 import depth.mvp.ns.domain.report_detail.domain.ReportType;
 import depth.mvp.ns.domain.report_detail.domain.repository.ReportDetailRepository;
 import depth.mvp.ns.domain.s3.service.S3Uploader;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
+import depth.mvp.ns.domain.user.domain.User;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.openkoreantext.processor.KoreanTokenJava;
 import org.openkoreantext.processor.OpenKoreanTextProcessorJava;
 import org.openkoreantext.processor.tokenizer.KoreanTokenizer;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import scala.collection.Seq;
@@ -28,10 +33,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -46,9 +48,96 @@ public class ReportService {
     private final WordCountRepository wordCountRepository;
     private final ReportRepository reportRepository;
     private final ReportDetailRepository reportDetailRepository;
-    private final BoardLikeRepository boardLikeRepository;
     private final CloudImageGenerator cloudImageGenerator;
     private final S3Uploader s3Uploader;
+
+
+    public ResponseEntity<?> findReport(LocalDate parsedDate) {
+        Theme theme = themeRepository.findByDate(parsedDate)
+                .orElseThrow(EntityNotFoundException::new);
+
+        Optional<Report> optionalReport = reportRepository.findByTheme(theme);
+
+        if (optionalReport.isEmpty()) {
+            // 오늘자 레포트 조회
+
+            int writtenTotal = reportRepository.getBoardCount(theme);
+            Board longestBoardByTheme = boardRepository.findLongestBoardByTheme(theme);
+
+            if (longestBoardByTheme == null) {
+                return ResponseEntity.ok(ReportRes.builder()
+                        .selectedDate(parsedDate)
+                        .themeName(theme.getContent())
+                        .writtenTotal(writtenTotal)
+                        .longestWriter(null)
+                        .build());
+            }
+
+            User user = longestBoardByTheme.getUser();
+
+            return ResponseEntity.ok(ReportRes.builder()
+                    .selectedDate(parsedDate)
+                    .themeName(theme.getContent())
+                    .writtenTotal(writtenTotal)
+                    .longestWriter(new ReportRes.LongestWriter(
+                            user.getNickname(),
+                            user.getImageUrl(),
+                            longestBoardByTheme.getLength()
+                    ))
+                    .build());
+        } else {
+            // 과거 레포트 조회
+
+            Report report = optionalReport.get();
+            Board longestBoardByTheme = boardRepository.findLongestBoardByTheme(theme);
+            User user = longestBoardByTheme.getUser();
+            List<ReportDetail> allBestReportTypeByReport = reportDetailRepository.findAllBestReportTypeByReport(report);
+
+            int writtenTotal = reportRepository.getBoardCount(theme);
+
+            List<PrevReportRes.BestPost> bestPosts = allBestReportTypeByReport.stream()
+                    .map(reportDetail -> {
+                        Optional<Board> board = boardRepository.findById(reportDetail.getReport().getId());// 작성 중 To do
+                        Tuple mostLikedBoardCountAndTitleWithUserAndTheme = boardRepository.findMostLikedBoardCountAndTitleWithUserAndTheme(reportDetail.getUser(), theme);
+
+
+                        if (mostLikedBoardCountAndTitleWithUserAndTheme == null) {
+                            return PrevReportRes.BestPost.builder()
+                                    .nickname(reportDetail.getUser().getNickname())
+                                    .imageUrl(reportDetail.getUser().getImageUrl())
+                                    .title("유효한 제목 없음.")
+                                    .likeCount(0L)
+                                    .build();
+                        }
+
+                        Long likeCount = mostLikedBoardCountAndTitleWithUserAndTheme.get(0, Long.class);
+                        String title = mostLikedBoardCountAndTitleWithUserAndTheme.get(1, String.class);
+                        return PrevReportRes.BestPost.builder()
+                                .nickname(reportDetail.getUser().getNickname())
+                                .imageUrl(reportDetail.getUser().getImageUrl())
+                                .title(title) // 작성 중 To do
+                                .likeCount(likeCount) // 작성 중 To do
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(PrevReportRes.builder()
+                    .selectedDate(parsedDate)
+                    .themeName(theme.getContent())
+                    .writtenTotal(writtenTotal)
+                    .wordCloud(report.getWordCloud())
+                    .topWord(report.getTopWord())
+                    .count(report.getCount())
+                    .longestWriter(new ReportRes.LongestWriter(
+                            user.getNickname(),
+                            user.getImageUrl(),
+                            longestBoardByTheme.getLength()
+                    ))
+                    .bestPost(bestPosts)
+                    .build());
+        }
+    }
+
 
     @Transactional
     public void generateNReport() {
@@ -98,7 +187,6 @@ public class ReportService {
                 .theme(theme)
                 .wordCloud(null)
                 .build();
-
 
 
         // WordCount 객체 저장 -> 불필요 시 추후 삭제 할 수 있음.

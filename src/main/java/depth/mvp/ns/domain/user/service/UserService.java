@@ -8,6 +8,7 @@ import depth.mvp.ns.domain.user.dto.response.UserRankingRes;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.payload.ApiResponse;
 import depth.mvp.ns.global.payload.DefaultAssert;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -45,5 +46,23 @@ public class UserService {
 
     public List<UserRankingRes> getRankingData(RankingType type) {
         return userRepository.getTop3ByPointDesc(type);
+    }
+
+    public ResponseEntity<?> getProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        MyPageRes myPageRes = MyPageRes.builder()
+                .userId(userId)
+                .nickname(user.getNickname())
+                .imageUrl(user.getImageUrl())
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(myPageRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
     }
 }

@@ -27,4 +27,9 @@ public class UserController {
             ) {
         return ResponseEntity.ok(userService.getRankingData(type));
     }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserProfile(@RequestParam(required = true) Long userId) {
+        return userService.getProfile(userId);
+    }
 }
