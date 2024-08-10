@@ -38,7 +38,7 @@ public class BoardController {
     }
 
     @PostMapping("/{boardId}/like")
-    public ResponseEntity<?> hitTheLikeButton(@CurrentUser CustomUserDetails customUserDetails, @PathVariable Long boardId) {
+    public ResponseEntity<?> hitTheBoardLikeButton(@CurrentUser CustomUserDetails customUserDetails, @PathVariable Long boardId) {
         return boardService.hitLikeButton(customUserDetails, boardId);
     }
 
