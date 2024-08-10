@@ -4,6 +4,7 @@ import depth.mvp.ns.domain.user.domain.RankingType;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.domain.repository.UserRepository;
 import depth.mvp.ns.domain.user.dto.response.MyPageRes;
+import depth.mvp.ns.domain.user.dto.response.UserInfoByNicknameRes;
 import depth.mvp.ns.domain.user.dto.response.UserRankingRes;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.payload.ApiResponse;
@@ -14,8 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -63,6 +64,36 @@ public class UserService {
                 .information(myPageRes)
                 .build();
 
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    public ResponseEntity<?> getUInfoByNickname(Long userId, String nickname) {
+
+        if (userId != null) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(EntityNotFoundException::new);
+
+            UserInfoByNicknameRes byNickname = userRepository.findByNickname(nickname);
+
+            UserInfoByNicknameRes myInfoByNickname = userRepository.findByNickname(user.getNickname());
+
+            List<UserInfoByNicknameRes> userInfoByNicknameResList = new ArrayList<>();
+            userInfoByNicknameResList.add(byNickname);
+            userInfoByNicknameResList.add(myInfoByNickname);
+
+            ApiResponse apiResponse = ApiResponse.builder()
+                    .check(true)
+                    .information(userInfoByNicknameResList)
+                    .build();
+            return ResponseEntity.ok(apiResponse);
+        }
+
+        UserInfoByNicknameRes byNickname = userRepository.findByNickname(nickname);
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(byNickname)
+                .build();
         return ResponseEntity.ok(apiResponse);
     }
 }

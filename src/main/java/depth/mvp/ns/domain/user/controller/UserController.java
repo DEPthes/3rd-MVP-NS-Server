@@ -32,4 +32,15 @@ public class UserController {
     public ResponseEntity<?> getUserProfile(@RequestParam(required = true) Long userId) {
         return userService.getProfile(userId);
     }
+
+    @GetMapping("/nickname")
+    public ResponseEntity<?> getUserInfoByNickname(
+            @CurrentUser CustomUserDetails customUserDetails,
+            @RequestParam(required = true) String nickname
+    ) {
+        if (customUserDetails != null) {
+            return userService.getUInfoByNickname(customUserDetails.getId(), nickname);
+        }
+        return userService.getUInfoByNickname(null, nickname);
+    }
 }
