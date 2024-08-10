@@ -74,4 +74,17 @@ public class S3Uploader {
 
     }
 
+
+    public String uploadBufferedImage(InputStream inputStream, String fileName, long contentLength, String contentType) {
+        try {
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(contentLength);
+            metadata.setContentType(contentType);
+
+            amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, metadata));
+            return getFullPath(fileName);
+        } catch (AmazonServiceException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.", e);
+        }
+    }
 }

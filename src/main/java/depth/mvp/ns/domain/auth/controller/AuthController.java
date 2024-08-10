@@ -1,7 +1,5 @@
 package depth.mvp.ns.domain.auth.controller;
 
-import depth.mvp.ns.domain.auth.dto.request.CheckNicknameReq;
-import depth.mvp.ns.domain.auth.dto.request.CheckUsernameReq;
 import depth.mvp.ns.domain.auth.dto.request.SignInReq;
 import depth.mvp.ns.domain.auth.dto.request.SignUpReq;
 import depth.mvp.ns.domain.auth.service.AuthService;
@@ -30,6 +28,7 @@ public class AuthController {
     ) {
         return authService.signUp(signUpReq, isDefault, image);
     }
+
     @PostMapping("/sign-in")
     public ResponseEntity<?> signIn(@Valid @RequestBody SignInReq signInReq) {
         return authService.signIn(signInReq);
@@ -40,14 +39,14 @@ public class AuthController {
         return authService.signOut(userDetails);
     }
 
-    @GetMapping("/username")
-    public ResponseEntity<?> checkUsername(@RequestBody CheckUsernameReq checkUsernameReq) {
-        return authService.checkUsername(checkUsernameReq);
+    @GetMapping("/check/username")
+    public ResponseEntity<?> checkUsername(@RequestParam String username) {
+        return authService.checkUsername(username);
     }
 
-    @GetMapping("/nickname")
-    public ResponseEntity<?> checkNickname(@RequestBody CheckNicknameReq checkNicknameReq) {
-        return authService.checkNickname(checkNicknameReq);
+    @GetMapping("/check/nickname")
+    public ResponseEntity<?> checkNickname(@RequestParam String nickname) {
+        return authService.checkNickname(nickname);
     }
 
 }
