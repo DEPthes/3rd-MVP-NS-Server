@@ -45,8 +45,8 @@ public class UserService {
         return ResponseEntity.ok(apiResponse);
     }
 
-    public List<UserRankingRes> getRankingData(RankingType type) {
-        return userRepository.getTop3ByPointDesc(type);
+    public UserRankingRes getRankingData(Long id, RankingType type) {
+        return userRepository.getNRankingDesc(id, type);
     }
 
     public ResponseEntity<?> getProfile(Long userId) {

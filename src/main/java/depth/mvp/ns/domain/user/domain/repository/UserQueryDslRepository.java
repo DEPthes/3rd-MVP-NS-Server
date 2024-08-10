@@ -7,7 +7,8 @@ import depth.mvp.ns.domain.user.dto.response.UserRankingRes;
 import java.util.List;
 
 public interface UserQueryDslRepository {
-    List<UserRankingRes> getTop3ByPointDesc(RankingType type);
 
     UserInfoByNicknameRes findByNickname(String nickname);
+
+    UserRankingRes getNRankingDesc(Long id, RankingType type);
 }

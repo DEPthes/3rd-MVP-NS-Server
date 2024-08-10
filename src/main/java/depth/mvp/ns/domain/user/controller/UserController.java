@@ -23,9 +23,13 @@ public class UserController {
 
     @GetMapping("/ranking")
     public ResponseEntity<?> getRanking(
+            @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(required = false, defaultValue = "TOTAL") RankingType type
             ) {
-        return ResponseEntity.ok(userService.getRankingData(type));
+        if (customUserDetails != null) {
+            return ResponseEntity.ok(userService.getRankingData(customUserDetails.getId(), type));
+        }
+        return ResponseEntity.ok(userService.getRankingData(null, type));
     }
 
     @GetMapping("/profile")
