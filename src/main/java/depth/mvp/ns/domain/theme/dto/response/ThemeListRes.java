@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 @Getter
 public class ThemeListRes {
-    private Long themeId; // 주제 목록
+    private Long themeId; // 주제ID
     private String content; // 주제 내용
     private LocalDate date; // 주제 발행일
     private int likeCount; // 주제 좋아요수
