@@ -1,11 +1,11 @@
 package depth.mvp.ns.domain.theme.controller;
 
 import depth.mvp.ns.domain.theme.service.ThemeService;
+import depth.mvp.ns.global.config.security.token.CurrentUser;
+import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -15,5 +15,10 @@ public class ThemeController {
     @GetMapping("/today")
     public ResponseEntity<?> getTodayTheme(){
         return themeService.getTodayTheme();
+    }
+
+    @PostMapping("/{themeId}/like")
+    public ResponseEntity<?> hitTheThemeLikeButton(@CurrentUser CustomUserDetails customUserDetails, @PathVariable Long themeId) {
+        return themeService.hitLikeButton(customUserDetails, themeId);
     }
 }
