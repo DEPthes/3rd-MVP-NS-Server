@@ -70,7 +70,7 @@ public class SecurityConfig {
                                 antMatcher("/v3/api-docs/**"),
                                 antMatcher("/auth/**"),
                                 antMatcher("/api/v1/report/generate"),
-                                antMatcher("/api/v1/theme/today"))
+                                antMatcher("/api/v1/theme/**"))
                         .permitAll()
                         .anyRequest()
                         .authenticated());
