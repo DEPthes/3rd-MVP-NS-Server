@@ -1,10 +1,9 @@
 package depth.mvp.ns.domain.theme.service;
 
-import depth.mvp.ns.domain.board.domain.Board;
-import depth.mvp.ns.domain.board_like.domain.BoardLike;
 import depth.mvp.ns.domain.common.Status;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
+import depth.mvp.ns.domain.theme.dto.response.ThemeLikeRes;
 import depth.mvp.ns.domain.theme.dto.response.TodayThemeRes;
 import depth.mvp.ns.domain.theme_like.domain.ThemeLike;
 import depth.mvp.ns.domain.theme_like.domain.repository.ThemeLikeRepository;
@@ -56,33 +55,46 @@ public class ThemeService {
 
         Optional<ThemeLike> optionalThemeLike = themeLikeRepository.findByUserAndTheme(user, theme);
 
-        ThemeLike themeLike;
+        boolean isLiked = true;
         // 기존에 좋아요를 누르지 않은 경우
         if (optionalThemeLike.isEmpty()) {
-            themeLike = ThemeLike.builder()
-                    .user(user)
-                    .theme(theme)
-                    .build();
-            // 최초 좋아요 시 사용자에게 포인트 부여
-            user.addPoint(1);
+            handleFirstLike(user, theme);
         } else {
-            themeLike = optionalThemeLike.get();
-            // 좋아요 취소 시 포인트 회수
-            if (themeLike.getStatus() == Status.ACTIVE) {
-                user.addPoint(-1);
-                themeLike.updateStatus(Status.DELETE);
-            } else {
-                themeLike.updateStatus(Status.ACTIVE);
-            }
+            handleExistingLike(optionalThemeLike.get(), user);
+            isLiked = optionalThemeLike.get().getStatus() == Status.ACTIVE;
         }
-        // 좋아요 상태 반환
-        boolean isLiked = themeLike.getStatus() == Status.ACTIVE;
+
+        ThemeLikeRes themeLikeRes = ThemeLikeRes.builder().liked(isLiked).build();
+
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
-                .information(isLiked)
+                .information(themeLikeRes)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
+    }
+
+    private void handleFirstLike(User user, Theme theme) {
+        ThemeLike themeLike = ThemeLike.builder()
+                .user(user)
+                .theme(theme)
+                .build();
+        themeLikeRepository.save(themeLike);
+
+        // 최초 좋아요 시 사용자에게 포인트 부여
+        user.addPoint(1);
+    }
+
+    private void handleExistingLike(ThemeLike themeLike, User user) {
+        if (themeLike.getStatus() == Status.ACTIVE) {
+            // 좋아요 취소
+            themeLike.updateStatus(Status.DELETE);
+            user.addPoint(-1);
+        } else {
+            // 좋아요 다시 활성화
+            themeLike.updateStatus(Status.ACTIVE);
+            user.addPoint(1);
+        }
     }
 
     // 유효한 사용자 확인
