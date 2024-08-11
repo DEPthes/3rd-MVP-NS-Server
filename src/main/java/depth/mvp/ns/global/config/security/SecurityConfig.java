@@ -6,6 +6,7 @@ import depth.mvp.ns.global.config.security.filter.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -54,6 +55,9 @@ public class SecurityConfig {
                         .accessDeniedHandler(new JwtAccessDeniedHandler())
                 )
                 .authorizeHttpRequests(authorize -> authorize
+                        // 특정 GET 요청만 인증 없이 접근 가능
+                        .requestMatchers(HttpMethod.GET, "/api/v1/board/{boardId}").permitAll()
+                        .requestMatchers("/api/v1/board/**").authenticated()
                         .requestMatchers(
                                 antMatcher("/"),
                                 antMatcher("/error"),
