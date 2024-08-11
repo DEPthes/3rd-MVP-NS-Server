@@ -5,7 +5,9 @@ import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.common.Status;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
+import depth.mvp.ns.domain.theme.dto.response.ThemeDetailRes;
 import depth.mvp.ns.domain.theme.dto.response.ThemeLikeRes;
+import depth.mvp.ns.domain.theme.dto.response.ThemeListRes;
 import depth.mvp.ns.domain.theme.dto.response.TodayThemeRes;
 import depth.mvp.ns.domain.theme_like.domain.ThemeLike;
 import depth.mvp.ns.domain.theme_like.domain.repository.ThemeLikeRepository;
@@ -26,6 +28,7 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;
 
