@@ -1,6 +1,5 @@
 package depth.mvp.ns.domain.user.service;
 
-import com.sun.security.auth.UserPrincipal;
 import depth.mvp.ns.domain.s3.service.S3Uploader;
 import depth.mvp.ns.domain.user.domain.RankingType;
 import depth.mvp.ns.domain.user.domain.User;
@@ -11,10 +10,8 @@ import depth.mvp.ns.domain.user.dto.response.MyPageRes;
 import depth.mvp.ns.domain.user.dto.response.UserRankingRes;
 import depth.mvp.ns.global.config.security.token.CurrentUser;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
-import depth.mvp.ns.global.error.DefaultException;
 import depth.mvp.ns.global.payload.ApiResponse;
 import depth.mvp.ns.global.payload.DefaultAssert;
-import depth.mvp.ns.global.payload.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.InvalidParameterException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
