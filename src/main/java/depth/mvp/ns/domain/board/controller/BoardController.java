@@ -37,4 +37,11 @@ public class BoardController {
         return boardService.deleteBoard(userDetails, boardId);
     }
 
+    @GetMapping("/{boardId}")
+    public ResponseEntity<?> getBoardDetail(
+            @PathVariable Long boardId,
+            @CurrentUser CustomUserDetails customUserDetails) {
+        return boardService.getBoardDetail(boardId, customUserDetails);
+    }
+
 }

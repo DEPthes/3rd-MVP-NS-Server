@@ -5,6 +5,7 @@ import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.board.dto.request.PublishReq;
 import depth.mvp.ns.domain.board.dto.request.SaveDraftReq;
 import depth.mvp.ns.domain.board.dto.request.UpdateReq;
+import depth.mvp.ns.domain.board.dto.response.BoardDetailRes;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
 import depth.mvp.ns.domain.user.domain.User;
@@ -168,4 +169,37 @@ public class BoardService {
                 .build();
     }
 
+    public ResponseEntity<?> getBoardDetail(Long boardId, CustomUserDetails customUserDetails) {
+        Board board = validateBoard(boardId);
+
+        // 회원인지 여부에 따른 처리
+        Long userId = null;
+        boolean isOwner = false;
+        boolean liked = false;
+
+        if (customUserDetails != null) {
+            userId = customUserDetails.getId();
+            isOwner = userId.equals(board.getUser().getId());
+            liked = boardRepository.isBoardLikedByUser(boardId, userId);
+        }
+
+        BoardDetailRes boardDetailRes = BoardDetailRes.builder()
+                .userId(board.getUser().getId())
+                .isOwner(isOwner)
+                .liked(liked)
+                .nickname(board.getUser().getNickname())
+                .imageUrl(board.getUser().getImageUrl())
+                .themeContent(board.getTheme().getContent())
+                .boardTitle(board.getTitle())
+                .boardContent(board.getContent())
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(boardDetailRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+
+    }
 }
