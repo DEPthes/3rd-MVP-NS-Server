@@ -1,6 +1,5 @@
 package depth.mvp.ns.domain.theme_like.domain.repository;
 
-import depth.mvp.ns.domain.board_like.domain.BoardLike;
 import depth.mvp.ns.domain.common.Status;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme_like.domain.ThemeLike;
@@ -31,5 +30,14 @@ public interface ThemeLikeRepository extends JpaRepository<ThemeLike, Long> {
             @Param("user") User user,
             @Param("status") Status status,
             @Param("keyword") String keyword
+    );
+
+    @Query("SELECT tl FROM ThemeLike tl WHERE tl.user = :user AND tl.status = :status AND " +
+            "LOWER(tl.theme.content) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<ThemeLike> findPagesByUserAndStatusAndThemeFieldsContaining(
+            @Param("user") User user,
+            @Param("status") Status status,
+            @Param("keyword") String keyword,
+            Pageable pageable
     );
 }

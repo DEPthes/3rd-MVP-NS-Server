@@ -11,6 +11,7 @@ import depth.mvp.ns.domain.theme_like.domain.repository.ThemeLikeRepository;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.domain.repository.UserRepository;
 import depth.mvp.ns.domain.user.dto.response.BoardLikeByUserRes;
+import depth.mvp.ns.domain.user.dto.response.MyBoardRes;
 import depth.mvp.ns.domain.user.dto.response.PageRes;
 import depth.mvp.ns.domain.user.dto.response.ThemeLikeByUserRes;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
@@ -59,7 +60,7 @@ public class UserLikeService {
             boardLikeByUserResList = applyPagination(boardLikeByUserResList, page, 3);
         } else {
             // currentLike 기준 정렬 및 페이징
-            boardLikeByUserResList = sortBoardByCurrentLike(user, page);
+            boardLikeByUserResList = sortBoardByCurrentLike(user, page, null);
         }
 
         PageInfo pageInfo = createPageInfo(allBoardLikes.size(), page, 3);
@@ -103,9 +104,18 @@ public class UserLikeService {
     }
 
     // currentLike 기준으로 정렬 및 페이징
-    private List<BoardLikeByUserRes> sortBoardByCurrentLike(User user, int page) {
+    private List<BoardLikeByUserRes> sortBoardByCurrentLike(User user, int page, String keyword) {
         Pageable pageable = PageRequest.of(page - 1, 3, Sort.by(Sort.Direction.DESC, "createdDate"));
-        Page<BoardLike> boardLikePage = boardLikeRepository.findByUserAndStatus(user, Status.ACTIVE, pageable);
+        Page<BoardLike> boardLikePage;
+        // 조회, 검색 동일한 메소드 사용하므로 keyword 유무로 구분
+        if (keyword == null) {
+            // 좋아요한 게시글 조회
+            boardLikePage = boardLikeRepository.findByUserAndStatus(user, Status.ACTIVE, pageable);
+        } else {
+            // 좋아요한 게시글 검색
+            boardLikePage = boardLikeRepository.findPagesByUserAndStatusAndBoardFieldsContaining(
+                    user, Status.ACTIVE, keyword, pageable);
+        }
 
         return boardLikePage.stream()
                 .map(boardLike -> {
@@ -154,7 +164,7 @@ public class UserLikeService {
             boardLikeByUserResList = applyPagination(boardLikeByUserResList, page, 3);
         } else {
             // currentLike 기준 정렬 및 페이징
-            boardLikeByUserResList = sortBoardByCurrentLike(user, page);
+            boardLikeByUserResList = sortBoardByCurrentLike(user, page, keyword);
         }
 
         PageInfo pageInfo = createPageInfo(allBoardLikes.size(), page, 3);
@@ -187,7 +197,7 @@ public class UserLikeService {
             themeLikeByUserResList = applyPagination(themeLikeByUserResList, page, 3);
         } else {
             // currentLike 기준 정렬 및 페이징
-            themeLikeByUserResList = sortThemeByCurrentLike(user, page);
+            themeLikeByUserResList = sortThemeByCurrentLike(user, page, null);
         }
 
         PageInfo pageInfo = createPageInfo(allThemeLikes.size(), page, 3);
@@ -234,9 +244,18 @@ public class UserLikeService {
     }
 
     // currentLike 기준으로 정렬 및 페이징
-    private List<ThemeLikeByUserRes> sortThemeByCurrentLike(User user, int page) {
+    private List<ThemeLikeByUserRes> sortThemeByCurrentLike(User user, int page, String keyword) {
         Pageable pageable = PageRequest.of(page - 1, 3, Sort.by(Sort.Direction.DESC, "createdDate"));
-        Page<ThemeLike> themeLikePage = themeLikeRepository.findByUserAndStatus(user, Status.ACTIVE, pageable);
+        Page<ThemeLike> themeLikePage;
+
+        if (keyword == null) {
+            // 좋아요한 주제 조회
+            themeLikePage = themeLikeRepository.findByUserAndStatus(user, Status.ACTIVE, pageable);
+        } else {
+            // 좋아요한 주제 검색
+            themeLikePage = themeLikeRepository.findPagesByUserAndStatusAndThemeFieldsContaining(
+                    user, Status.ACTIVE, keyword, pageable);
+        }
 
         return themeLikePage.stream()
                 .map(themeLike -> {
@@ -268,7 +287,7 @@ public class UserLikeService {
             themeLikeByUserResList = applyPagination(themeLikeByUserResList, page, 3);
         } else {
             // currentLike 기준 정렬 및 페이징
-            themeLikeByUserResList = sortThemeByCurrentLike(user, page);
+            themeLikeByUserResList = sortThemeByCurrentLike(user, page, keyword);
         }
 
         PageInfo pageInfo = createPageInfo(allThemeLikes.size(), page, 3);
@@ -285,6 +304,147 @@ public class UserLikeService {
     }
 
     // 내 글
+    public ResponseEntity<?> getMyBoards(CustomUserDetails customUserDetails, int page, boolean filterDrafts, String sortBy) {
+        // 최신순, 좋아요 순
+        User user = validUserById(customUserDetails.getId());
+        // 임시저장 제외 여부에 따라 totalElements 달라짐
+        List<Board> allMyBoards;
+        if (filterDrafts) {
+            // 임시저장 제외 필터 체크한 경우: isPublished가 true인 것만 가져옴
+            allMyBoards = boardRepository.findListBoardsByUserAndIsPublished(user, true);
+        } else {
+            // 임시저장 제외 필터 체크하지 않은 경우: isPublished 상관없이 가져옴
+            allMyBoards = boardRepository.findByUser(user);
+        }
+
+        List<MyBoardRes> myBoardResList;
+        switch (sortBy) {
+            case "date":
+                myBoardResList = sortByDate(user, page, filterDrafts, null);
+                break;
+            case "like":
+                myBoardResList = sortByLike(user, filterDrafts, null);
+                myBoardResList.sort(Comparator.comparing(MyBoardRes::getCountLike, Comparator.reverseOrder()));
+                myBoardResList = applyPagination(myBoardResList, page, 3);
+                break;
+            default:
+                throw new InvalidParameterException("잘못된 요청 파라미터입니다.");
+        }
+
+        PageInfo pageInfo = createPageInfo(allMyBoards.size(), page, 3);
+        PageRes<MyBoardRes> pageMyBoardRes = PageRes.<MyBoardRes>builder()
+                .pageInfo(pageInfo)
+                .resList(myBoardResList)
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(pageMyBoardRes)
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    public ResponseEntity<?> searchMyBoards(CustomUserDetails customUserDetails, int page, String keyword, boolean filterDrafts, String sortBy) {
+        // 최신순, 좋아요 순
+        User user = validUserById(customUserDetails.getId());
+
+        List<Board> allMyBoards;
+        // 임시저장 제외 여부에 따라 totalElements 달라짐
+        if (filterDrafts) {
+            allMyBoards = boardRepository.findListByUserAndIsPublishedAndBoardFieldsContaining(
+                    user, true, keyword);
+        } else {
+            allMyBoards = boardRepository.findListByUserAndBoardFieldsContaining(user, keyword);
+        }
+
+        List<MyBoardRes> myBoardResList;
+        switch (sortBy) {
+            case "date":
+                myBoardResList = sortByDate(user, page, filterDrafts, keyword);
+                break;
+            case "like":
+                myBoardResList = sortByLike(user, filterDrafts, keyword);
+                myBoardResList.sort(Comparator.comparing(MyBoardRes::getCountLike, Comparator.reverseOrder()));
+                myBoardResList = applyPagination(myBoardResList, page, 3);
+                break;
+            default:
+                throw new InvalidParameterException("잘못된 요청 파라미터입니다.");
+        }
+
+        PageInfo pageInfo = createPageInfo(allMyBoards.size(), page, 3);
+        PageRes<MyBoardRes> pageMyBoardRes = PageRes.<MyBoardRes>builder()
+                .pageInfo(pageInfo)
+                .resList(myBoardResList)
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(pageMyBoardRes)
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    // 임시저장 제외 여부, 검색어 여부에 따른 로직 분리
+    private List<Board> getFilteredBoards(User user, boolean filterDrafts, String keyword, Pageable pageable) {
+        if (filterDrafts) {
+            // 임시저장 제외
+            if (keyword == null) {
+                // 내 게시글 조회
+                return pageable == null
+                        ? boardRepository.findListBoardsByUserAndIsPublished(user, true)
+                        : boardRepository.findPageBoardsByUserAndIsPublished(user, true, pageable).getContent();
+            } else {
+                // 내 게시글 검색
+                return pageable == null
+                        ? boardRepository.findListByUserAndIsPublishedAndBoardFieldsContaining(user, true, keyword)
+                        : boardRepository.findPagesByUserAndIsPublishedAndBoardFieldsContaining(user, true, keyword, pageable).getContent();
+            }
+        } else {
+            // 임시저장 포함
+            if (keyword == null) {
+                // 내 게시글 조회
+                return pageable == null
+                        ? boardRepository.findByUser(user)
+                        : boardRepository.findByUser(user, pageable).getContent();
+            } else {
+                // 내 게시글 검색
+                return pageable == null
+                        ? boardRepository.findListByUserAndBoardFieldsContaining(user, keyword)
+                        : boardRepository.findPagesByUserAndAndBoardFieldsContaining(user, keyword, pageable).getContent();
+            }
+        }
+    }
+
+    private List<MyBoardRes> sortByDate(User user, int page, boolean filterDrafts, String keyword) {
+        Pageable pageable = PageRequest.of(page - 1, 3, Sort.by(Sort.Direction.DESC, "createdDate"));
+        List<Board> boardList = getFilteredBoards(user, filterDrafts, keyword, pageable);
+
+        return boardList.stream()
+                .map(board -> MyBoardRes.builder()
+                        .boardId(board.getId())
+                        .theme(board.getTheme().getContent())
+                        .title(board.getTitle())
+                        .createdDate(board.getCreatedDate())
+                        .countLike(boardLikeRepository.countByBoardAndStatus(board, Status.ACTIVE))
+                        .isPublished(board.findIsPublished())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    private List<MyBoardRes> sortByLike(User user, boolean filterDrafts, String keyword) {
+        List<Board> boardList = getFilteredBoards(user, filterDrafts, keyword, null);
+
+        return boardList.stream()
+                .map(board -> MyBoardRes.builder()
+                        .boardId(board.getId())
+                        .theme(board.getTheme().getContent())
+                        .title(board.getTitle())
+                        .createdDate(board.getCreatedDate())
+                        .countLike(boardLikeRepository.countByBoardAndStatus(board, Status.ACTIVE))
+                        .isPublished(board.findIsPublished())
+                        .build())
+                .collect(Collectors.toList());
+    }
 
     private User validUserById (Long userId) {
         Optional<User> optionalUser = userRepository.findById(userId);
