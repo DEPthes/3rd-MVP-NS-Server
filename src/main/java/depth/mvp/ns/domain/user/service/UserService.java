@@ -101,8 +101,6 @@ public class UserService {
         User user = validUserById(customUserDetails.getId());
 
         boolean checkedPassword = true;
-        // request 비밀번호 일치 여부 확인
-        DefaultAssert.isTrue(checkPasswordReq.getPassword().equals(checkPasswordReq.getCheckPassword()), "비밀번호가 일치하지 않습니다.");
         // 사용자가 회원가입 시 입력한 비밀번호와 일치 여부 확인
         DefaultAssert.isTrue(passwordEncoder.matches(checkPasswordReq.getPassword(), user.getPassword()), "비밀번호가 일치하지 않습니다.");
 

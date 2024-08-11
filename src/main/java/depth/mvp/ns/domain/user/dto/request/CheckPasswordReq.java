@@ -13,6 +13,4 @@ public class CheckPasswordReq {
     @NotBlank
     private String password;
 
-    @NotBlank
-    private String checkPassword;
 }
