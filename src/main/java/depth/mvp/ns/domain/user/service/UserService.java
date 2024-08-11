@@ -88,6 +88,8 @@ public class UserService {
     @Transactional
     public ResponseEntity<?> updateNickname(CustomUserDetails customUserDetails, UpdateNicknameReq updateNicknameReq) {
         User user = validUserById(customUserDetails.getId());
+        DefaultAssert.isTrue(!userRepository.existsByNickname(updateNicknameReq.getNickname()), "이미 존재하는 닉네임입니다.");
+
         user.updateNickname(updateNicknameReq.getNickname());
 
         ApiResponse apiResponse = ApiResponse.builder()
