@@ -187,7 +187,9 @@ public class BoardService {
                     .user(user)
                     .board(board)
                     .build();
+            // 최초 좋아요 시 사용자에게 포인트 부여
             user.addPoint(1);
+            // 작성자에게 포인트 부여
             board.getUser().addPoint(1);
         } else {
             boardLike = optionalBoardLike.get();
@@ -199,7 +201,7 @@ public class BoardService {
                 boardLike.updateStatus(Status.ACTIVE);
             }
         }
-
+        // 좋아요 상태 반환
         boolean isLiked = boardLike.getStatus() == Status.ACTIVE;
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)

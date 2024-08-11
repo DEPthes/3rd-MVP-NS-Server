@@ -63,6 +63,7 @@ public class ThemeService {
                     .user(user)
                     .theme(theme)
                     .build();
+            // 최초 좋아요 시 사용자에게 포인트 부여
             user.addPoint(1);
         } else {
             themeLike = optionalThemeLike.get();
@@ -74,7 +75,7 @@ public class ThemeService {
                 themeLike.updateStatus(Status.ACTIVE);
             }
         }
-
+        // 좋아요 상태 반환
         boolean isLiked = themeLike.getStatus() == Status.ACTIVE;
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
