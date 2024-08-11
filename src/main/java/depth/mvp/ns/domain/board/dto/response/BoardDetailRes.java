@@ -1,5 +1,6 @@
 package depth.mvp.ns.domain.board.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 public class BoardDetailRes {
     private Long userId; // 게시글 작성자
-    private boolean isOwner; // 본인 확인 여부
+    private boolean owner; // 본인 확인 여부
     private boolean liked; // 좋아요 여부
     private String nickname; // 작성자 닉네임
     private String imageUrl; // 작성자 프사
@@ -17,10 +18,10 @@ public class BoardDetailRes {
     private String boardContent; // 게시글 내용
 
     @Builder
-    public BoardDetailRes(Long userId, boolean isOwner, boolean liked, String nickname,
+    public BoardDetailRes(Long userId, boolean owner, boolean liked, String nickname,
                           String imageUrl, String themeContent, String boardTitle, String boardContent){
         this.userId = userId;
-        this.isOwner = isOwner;
+        this.owner = owner;
         this.liked = liked;
         this.nickname = nickname;
         this.imageUrl = imageUrl;

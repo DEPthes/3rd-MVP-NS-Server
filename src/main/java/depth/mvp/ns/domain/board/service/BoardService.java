@@ -174,18 +174,19 @@ public class BoardService {
 
         // 회원인지 여부에 따른 처리
         Long userId = null;
-        boolean isOwner = false;
+        boolean owner = false;
         boolean liked = false;
 
         if (customUserDetails != null) {
             userId = customUserDetails.getId();
-            isOwner = userId.equals(board.getUser().getId());
+            owner = userId.equals(board.getUser().getId());
+            // 사용자가 특정 게시물에 좋아요를 눌렀는지 여부
             liked = boardRepository.isBoardLikedByUser(boardId, userId);
         }
 
         BoardDetailRes boardDetailRes = BoardDetailRes.builder()
                 .userId(board.getUser().getId())
-                .isOwner(isOwner)
+                .owner(owner)
                 .liked(liked)
                 .nickname(board.getUser().getNickname())
                 .imageUrl(board.getUser().getImageUrl())
