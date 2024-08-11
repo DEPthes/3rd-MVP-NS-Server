@@ -11,7 +11,6 @@ import depth.mvp.ns.domain.theme_like.domain.repository.ThemeLikeRepository;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.domain.repository.UserRepository;
 import depth.mvp.ns.domain.user.dto.response.BoardLikeByUserRes;
-import depth.mvp.ns.domain.user.dto.response.PageBoardLikeRes;
 import depth.mvp.ns.domain.user.dto.response.PageRes;
 import depth.mvp.ns.domain.user.dto.response.ThemeLikeByUserRes;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
