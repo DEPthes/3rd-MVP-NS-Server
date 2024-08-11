@@ -12,7 +12,7 @@ import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.domain.repository.UserRepository;
 import depth.mvp.ns.domain.user.dto.response.BoardLikeByUserRes;
 import depth.mvp.ns.domain.user.dto.response.PageBoardLikeRes;
-import depth.mvp.ns.domain.user.dto.response.PageThemeLikeRes;
+import depth.mvp.ns.domain.user.dto.response.PageRes;
 import depth.mvp.ns.domain.user.dto.response.ThemeLikeByUserRes;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.payload.ApiResponse;
@@ -64,9 +64,9 @@ public class UserLikeService {
         }
 
         PageInfo pageInfo = createPageInfo(allBoardLikes.size(), page, 3);
-        PageBoardLikeRes pageBoardLikeRes = PageBoardLikeRes.builder()
+        PageRes<BoardLikeByUserRes> pageBoardLikeRes = PageRes.<BoardLikeByUserRes>builder()
                 .pageInfo(pageInfo)
-                .boardLikeResList(boardLikeByUserResList)
+                .resList(boardLikeByUserResList)
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
@@ -159,9 +159,9 @@ public class UserLikeService {
         }
 
         PageInfo pageInfo = createPageInfo(allBoardLikes.size(), page, 3);
-        PageBoardLikeRes pageBoardLikeRes = PageBoardLikeRes.builder()
+        PageRes<BoardLikeByUserRes> pageBoardLikeRes = PageRes.<BoardLikeByUserRes>builder()
                 .pageInfo(pageInfo)
-                .boardLikeResList(boardLikeByUserResList)
+                .resList(boardLikeByUserResList)
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
@@ -192,9 +192,9 @@ public class UserLikeService {
         }
 
         PageInfo pageInfo = createPageInfo(allThemeLikes.size(), page, 3);
-        PageThemeLikeRes pageThemeLikeRes = PageThemeLikeRes.builder()
+        PageRes<ThemeLikeByUserRes> pageThemeLikeRes = PageRes.<ThemeLikeByUserRes>builder()
                 .pageInfo(pageInfo)
-                .themeLikeResList(themeLikeByUserResList)
+                .resList(themeLikeByUserResList)
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
@@ -273,9 +273,9 @@ public class UserLikeService {
         }
 
         PageInfo pageInfo = createPageInfo(allThemeLikes.size(), page, 3);
-        PageThemeLikeRes pageThemeLikeRes = PageThemeLikeRes.builder()
+        PageRes<ThemeLikeByUserRes> pageThemeLikeRes = PageRes.<ThemeLikeByUserRes>builder()
                 .pageInfo(pageInfo)
-                .themeLikeResList(themeLikeByUserResList)
+                .resList(themeLikeByUserResList)
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
