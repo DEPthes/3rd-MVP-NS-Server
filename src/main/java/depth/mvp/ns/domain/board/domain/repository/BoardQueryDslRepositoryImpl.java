@@ -1,17 +1,24 @@
 package depth.mvp.ns.domain.board.domain.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.QBoard;
 import depth.mvp.ns.domain.board_like.domain.QBoardLike;
+import depth.mvp.ns.domain.common.Status;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.user.domain.QUser;
 import depth.mvp.ns.domain.user.domain.User;
+import depth.mvp.ns.domain.user.dto.response.QUserProfileRes;
+import depth.mvp.ns.domain.user.dto.response.QUserProfileRes_BoardListRes;
+import depth.mvp.ns.domain.user.dto.response.UserProfileRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static depth.mvp.ns.domain.board.domain.QBoard.board;
 import static depth.mvp.ns.domain.board_like.domain.QBoardLike.boardLike;
@@ -54,10 +61,45 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
                 .from(boardLike)
                 .leftJoin(board).on(boardLike.board.id.eq(board.id))
                 .where(board.user.eq(user),
-                        board.theme.eq(theme))
+                        board.theme.eq(theme),
+                        boardLike.status.eq(Status.ACTIVE))
                 .groupBy(board.title)
                 .orderBy(boardLike.count().desc())
                 .limit(1)
                 .fetchOne();
+    }
+
+    @Override
+    public UserProfileRes findByUserId(Long userId) {
+        User user = queryFactory
+                .selectFrom(QUser.user)
+                .where(QUser.user.id.eq(userId))
+                .fetchOne();
+
+        if (user == null) {
+            return null;
+        }
+
+        List<UserProfileRes.BoardListRes> boardListResList = queryFactory
+                .select(new QUserProfileRes_BoardListRes(
+                        QBoard.board.id,
+                        QBoard.board.title,
+                        QBoard.board.content,
+                        boardLike.count()
+                ))
+                .from(QBoard.board)
+                .leftJoin(boardLike).on(QBoard.board.id.eq(boardLike.board.id))
+                .where(QBoard.board.user.id.eq(userId))
+                .groupBy(QBoard.board.id)
+                .orderBy(QBoard.board.createdDate.desc())
+                .limit(3)
+                .fetch();
+
+        return new UserProfileRes(
+                user.getId(),
+                user.getNickname(),
+                user.getImageUrl(),
+                boardListResList
+        );
     }
 }

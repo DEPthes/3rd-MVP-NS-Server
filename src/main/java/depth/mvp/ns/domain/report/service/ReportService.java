@@ -80,6 +80,7 @@ public class ReportService {
                     .themeName(theme.getContent())
                     .writtenTotal(writtenTotal)
                     .longestWriter(new ReportRes.LongestWriter(
+                            user.getId(),
                             user.getNickname(),
                             user.getImageUrl(),
                             longestBoardByTheme.getLength()
@@ -113,6 +114,7 @@ public class ReportService {
                         Long likeCount = mostLikedBoardCountAndTitleWithUserAndTheme.get(0, Long.class);
                         String title = mostLikedBoardCountAndTitleWithUserAndTheme.get(1, String.class);
                         return PrevReportRes.BestPost.builder()
+                                .userId(reportDetail.getUser().getId())
                                 .nickname(reportDetail.getUser().getNickname())
                                 .imageUrl(reportDetail.getUser().getImageUrl())
                                 .title(title) // 작성 중 To do
@@ -129,6 +131,7 @@ public class ReportService {
                     .topWord(report.getTopWord())
                     .count(report.getCount())
                     .longestWriter(new ReportRes.LongestWriter(
+                            user.getId(),
                             user.getNickname(),
                             user.getImageUrl(),
                             longestBoardByTheme.getLength()

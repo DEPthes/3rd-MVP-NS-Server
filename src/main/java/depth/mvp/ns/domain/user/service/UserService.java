@@ -1,10 +1,13 @@
 package depth.mvp.ns.domain.user.service;
 
+import depth.mvp.ns.domain.board.domain.Board;
+import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.user.domain.RankingType;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.domain.repository.UserRepository;
 import depth.mvp.ns.domain.user.dto.response.MyPageRes;
 import depth.mvp.ns.domain.user.dto.response.UserInfoByNicknameRes;
+import depth.mvp.ns.domain.user.dto.response.UserProfileRes;
 import depth.mvp.ns.domain.user.dto.response.UserRankingRes;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.payload.ApiResponse;
@@ -25,6 +28,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final BoardRepository boardRepository;
 
     // 마이페이지 내 정보 조회
     public ResponseEntity<?> getMyInfo(CustomUserDetails customUserDetails) {
@@ -50,18 +54,15 @@ public class UserService {
     }
 
     public ResponseEntity<?> getProfile(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(EntityNotFoundException::new);
+        Optional<User> userOp = userRepository.findById(userId);
+        DefaultAssert.isTrue(userOp.isPresent(), "사용자가 존재하지 않습니다.");
 
-        MyPageRes myPageRes = MyPageRes.builder()
-                .userId(userId)
-                .nickname(user.getNickname())
-                .imageUrl(user.getImageUrl())
-                .build();
+        UserProfileRes userProfileResList = boardRepository.findByUserId(userId);
+
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
-                .information(myPageRes)
+                .information(userProfileResList)
                 .build();
 
         return ResponseEntity.ok(apiResponse);

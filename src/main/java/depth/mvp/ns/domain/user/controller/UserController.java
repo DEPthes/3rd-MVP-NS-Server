@@ -32,8 +32,8 @@ public class UserController {
         return ResponseEntity.ok(userService.getRankingData(null, type));
     }
 
-    @GetMapping("/profile")
-    public ResponseEntity<?> getUserProfile(@RequestParam(required = true) Long userId) {
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<?> getUserProfile(@PathVariable(required = true) Long userId) {
         return userService.getProfile(userId);
     }
 

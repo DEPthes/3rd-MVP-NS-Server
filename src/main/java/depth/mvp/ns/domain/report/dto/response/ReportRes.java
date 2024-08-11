@@ -13,6 +13,7 @@ public record ReportRes(
 ) {
     @Builder
     public static record LongestWriter(
+            Long userId,
             String nickname,
             String imageUrl,
             int length

@@ -18,6 +18,7 @@ public record PrevReportRes(
 ) {
     @Builder
     public static record BestPost(
+            Long userId,
             String nickname,
             String imageUrl,
             String title,
