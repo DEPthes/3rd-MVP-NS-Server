@@ -19,7 +19,7 @@ public interface ThemeRepository extends JpaRepository<Theme, Long> {
     @Query("SELECT COUNT(b) FROM Board b WHERE b.theme.id = :themeId")
     int countBoardsByThemeId(@Param("themeId") Long themeId);
 
-    @Query("SELECT COUNT(l) FROM ThemeLike l WHERE l.theme.id = :themeId")
+    @Query("SELECT COUNT(l) FROM ThemeLike l WHERE l.theme.id = :themeId AND l.status = 'ACTIVE'")
     int countLikesByThemeId(@Param("themeId") Long themeId);
 
     Page<Theme> findAllByOrderByDateDesc(Pageable pageable);
