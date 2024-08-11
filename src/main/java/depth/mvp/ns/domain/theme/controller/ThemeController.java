@@ -5,11 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -39,4 +35,14 @@ public class ThemeController {
         return themeService.searchTheme(keyword, pageable);
     }
 
- }
+
+    @GetMapping("/{themeId}")
+    public ResponseEntity<?> getThemeDetail(
+            @PathVariable Long themeId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "2") int size,
+            @RequestParam(defaultValue = "date") String sortBy) {
+        Pageable pageable = PageRequest.of(page, size);
+        return themeService.getThemeDetail(themeId, sortBy, pageable);
+    }
+}
