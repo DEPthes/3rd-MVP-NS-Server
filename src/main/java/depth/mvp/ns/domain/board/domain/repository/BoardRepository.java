@@ -15,7 +15,7 @@ import java.util.List;
 public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryDslRepository {
     List<Board> findByTheme(Theme theme);
 
-    @Query("SELECT COUNT(l) FROM BoardLike l WHERE l.board.id = :boardId")
+    @Query("SELECT COUNT(l) FROM BoardLike l WHERE l.board.id = :boardId AND l.status = 'ACTICE'")
     int countLikesByBoardId(@Param("boardId") Long boardId);
 
     @Query("SELECT b FROM Board b WHERE b.theme.id = :themeId ORDER BY b.createdDate DESC")
