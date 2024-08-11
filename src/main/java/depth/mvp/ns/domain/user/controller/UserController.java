@@ -64,4 +64,12 @@ public class UserController {
             @RequestParam(defaultValue = "createdDate") String sortBy) {   // createdDate, like, currentLike
         return userLikeService.getLikedBoardsByUser(customUserDetails, page, sortBy);
     }
+
+    @GetMapping("/board/like/search")
+    public ResponseEntity<?> searchLikedBoardsByUser(
+            @CurrentUser CustomUserDetails customUserDetails,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam String keyword) {
+        return userLikeService.searchLikedBoardsByUser(customUserDetails, page, keyword);
+    }
 }

@@ -7,6 +7,8 @@ import depth.mvp.ns.domain.user.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,4 +23,15 @@ public interface BoardLikeRepository extends JpaRepository<BoardLike, Long> {
     Page<BoardLike> findByUserAndStatus(User user, Status status, Pageable pageable);
 
     int countByBoardAndStatus(Board board, Status status);
+
+    @Query("SELECT bl FROM BoardLike bl WHERE bl.user = :user AND bl.status = :status AND " +
+            "(LOWER(bl.board.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(bl.board.theme.content) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<BoardLike> findByUserAndStatusAndBoardFieldsContaining(
+            @Param("user") User user,
+            @Param("status") Status status,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
 }
