@@ -61,7 +61,7 @@ public class UserController {
     public ResponseEntity<?> findLikedBoardsByUser(
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "createdDate") String sortBy) {   // createdDate, like, currentLike
+            @RequestParam(defaultValue = "date") String sortBy) {   // date, like, currentLike
         return userLikeService.getLikedBoardsByUser(customUserDetails, page, sortBy);
     }
 
@@ -69,7 +69,8 @@ public class UserController {
     public ResponseEntity<?> searchLikedBoardsByUser(
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam String keyword) {
-        return userLikeService.searchLikedBoardsByUser(customUserDetails, page, keyword);
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "date") String sortBy) {
+        return userLikeService.searchLikedBoardsByUser(customUserDetails, page, keyword, sortBy);
     }
 }

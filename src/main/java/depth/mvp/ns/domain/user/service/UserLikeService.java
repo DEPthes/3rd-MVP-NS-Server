@@ -22,8 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.util.Comparator;
 import java.util.List;
@@ -87,7 +85,7 @@ public class UserLikeService {
     // 정렬 메소드
     private void sortBoardLikes(List<BoardLikeByUserRes> boardLikeByUserResList, String sortBy) {
         switch (sortBy) {
-            case "createdDate":
+            case "date":
                 boardLikeByUserResList.sort(Comparator.comparing(BoardLikeByUserRes::getCreatedDate, Comparator.reverseOrder()));
                 break;
             case "like":
@@ -135,32 +133,25 @@ public class UserLikeService {
     }
 
     // 검색
-    public ResponseEntity<?> searchLikedBoardsByUser(CustomUserDetails customUserDetails, int page, String keyword) {
+    public ResponseEntity<?> searchLikedBoardsByUser(CustomUserDetails customUserDetails, int page, String keyword, String sortBy) {
         User user = validUserById(customUserDetails.getId());
-        // 일단 최근 좋아요한 순으로 정렬
-        Sort sort = Sort.by(Sort.Direction.DESC, "createdDate");
-        Pageable pageable = PageRequest.of(page - 1, 3, sort);
-        
-        Page<BoardLike> boardLikePage = boardLikeRepository.findByUserAndStatusAndBoardFieldsContaining(
-                user, Status.ACTIVE, keyword, pageable
-        );
+        List<BoardLikeByUserRes> boardLikeByUserResList;
+        List<BoardLike> allBoardLikes =  boardLikeRepository.findByUserAndStatusAndBoardFieldsContaining(
+                user, Status.ACTIVE, keyword);
 
-        List<BoardLike> boardLikes = boardLikePage.getContent().stream()
-                .map(boardLike -> BoardLike.builder()
-                        .board(boardLike.getBoard())
-                        .user(boardLike.getUser())
-                        .build())
-                .toList();
+        // currentLike는 다른 로직 적용
+        if (!Objects.equals(sortBy, "currentLike")) {
+            boardLikeByUserResList = processBoardLikes(allBoardLikes);
+            // createdDate, like 정렬 적용
+            sortBoardLikes(boardLikeByUserResList, sortBy);
+            // 페이징 적용
+            boardLikeByUserResList = applyPagination(boardLikeByUserResList, page, 3);
+        } else {
+            // currentLike 기준 정렬 및 페이징
+            boardLikeByUserResList = sortBoardByCurrentLike(user, page);
+        }
 
-        List<BoardLikeByUserRes> boardLikeByUserResList = processBoardLikes(boardLikes);
-
-        PageInfo pageInfo = new PageInfo(
-                boardLikePage.getNumber() + 1,
-                boardLikePage.getSize(),
-                boardLikePage.getTotalElements(),
-                boardLikePage.getTotalPages()
-        );
-
+        PageInfo pageInfo = createPageInfo(allBoardLikes.size(), page, 3);
         PageBoardLikeRes pageBoardLikeRes = PageBoardLikeRes.builder()
                 .pageInfo(pageInfo)
                 .boardLikeResList(boardLikeByUserResList)
