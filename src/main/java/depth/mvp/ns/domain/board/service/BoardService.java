@@ -188,6 +188,7 @@ public class BoardService {
                     .board(board)
                     .build();
             user.addPoint(1);
+            board.getUser().addPoint(1);
         } else {
             boardLike = optionalBoardLike.get();
             // 좋아요 취소 시 포인트 회수
