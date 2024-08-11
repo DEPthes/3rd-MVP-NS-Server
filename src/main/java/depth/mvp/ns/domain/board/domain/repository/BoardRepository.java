@@ -13,7 +13,6 @@ import java.util.List;
 public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryDslRepository {
     List<Board> findByTheme(Theme theme);
 
-    @Query("SELECT CASE WHEN COUNT(l) > 0 THEN true ELSE false END FROM BoardLike l WHERE l.board.id = :boardId AND l.user.id = :userId")
+    @Query("SELECT COUNT(l) > 0 FROM BoardLike l WHERE l.board.id = :boardId AND l.user.id = :userId AND l.status = 'ACTIVE'")
     boolean isBoardLikedByUser(@Param("boardId") Long boardId, @Param("userId") Long userId);
-
 }
