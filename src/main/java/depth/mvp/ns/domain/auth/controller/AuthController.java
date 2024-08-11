@@ -3,6 +3,7 @@ package depth.mvp.ns.domain.auth.controller;
 import depth.mvp.ns.domain.auth.dto.request.SignInReq;
 import depth.mvp.ns.domain.auth.dto.request.SignUpReq;
 import depth.mvp.ns.domain.auth.service.AuthService;
+import depth.mvp.ns.domain.auth.token.dto.RefreshTokenReq;
 import depth.mvp.ns.global.config.security.token.CurrentUser;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import jakarta.validation.Valid;
@@ -47,6 +48,11 @@ public class AuthController {
     @GetMapping("/check/nickname")
     public ResponseEntity<?> checkNickname(@RequestParam String nickname) {
         return authService.checkNickname(nickname);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody RefreshTokenReq refreshTokenReq) {
+        return authService.refresh(refreshTokenReq);
     }
 
 }
