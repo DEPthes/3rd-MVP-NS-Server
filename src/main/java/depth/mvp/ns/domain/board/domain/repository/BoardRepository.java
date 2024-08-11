@@ -24,4 +24,7 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
     @Query("SELECT b FROM Board b WHERE b.theme.id = :themeId ORDER BY (SELECT COUNT(bl) FROM BoardLike bl " +
             "WHERE bl.board.id = b.id AND bl.status = 'ACTIVE') DESC")
     Page<Board> findByThemeIdOrderByLikeCount(@Param("themeId") Long themeId, Pageable pageable);
+
+    @Query("SELECT COUNT(b) FROM Board b WHERE b.theme = :theme AND b.isPublished = :isPublished")
+    int countByThemeAndIsPublished(Theme theme, boolean b);
 }

@@ -111,6 +111,7 @@ public class UserService {
         return ResponseEntity.ok(apiResponse);
     }
 
+
     private User validUserById(Long userId){
         Optional<User> optionalUser = userRepository.findById(userId);
         DefaultAssert.isTrue(optionalUser.isPresent(), "유저 정보가 유효하지 않습니다.");

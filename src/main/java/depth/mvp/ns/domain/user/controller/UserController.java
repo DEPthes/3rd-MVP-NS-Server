@@ -21,7 +21,6 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
-    private final UserLikeService userLikeService;
 
     @GetMapping
     public ResponseEntity<?> findUserInformation(@CurrentUser CustomUserDetails customUserDetails) {
@@ -57,20 +56,4 @@ public class UserController {
         return ResponseEntity.ok(userService.getRankingData(type));
     }
 
-    @GetMapping("/board/like")
-    public ResponseEntity<?> findLikedBoardsByUser(
-            @CurrentUser CustomUserDetails customUserDetails,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "date") String sortBy) {   // date, like, currentLike
-        return userLikeService.getLikedBoardsByUser(customUserDetails, page, sortBy);
-    }
-
-    @GetMapping("/board/like/search")
-    public ResponseEntity<?> searchLikedBoardsByUser(
-            @CurrentUser CustomUserDetails customUserDetails,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam String keyword,
-            @RequestParam(defaultValue = "date") String sortBy) {
-        return userLikeService.searchLikedBoardsByUser(customUserDetails, page, keyword, sortBy);
-    }
 }
