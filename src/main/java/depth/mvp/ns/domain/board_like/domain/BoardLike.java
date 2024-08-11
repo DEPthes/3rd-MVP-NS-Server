@@ -2,6 +2,7 @@ package depth.mvp.ns.domain.board_like.domain;
 
 import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.common.BaseEntity;
+import depth.mvp.ns.domain.common.Status;
 import depth.mvp.ns.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -32,4 +33,5 @@ public class BoardLike extends BaseEntity {
         this.user = user;
         this.board = board;
     }
+
 }
