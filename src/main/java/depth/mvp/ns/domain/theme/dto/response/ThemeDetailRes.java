@@ -28,16 +28,16 @@ public class ThemeDetailRes {
         private Long boardId; // 게시글ID
         private String title; // 게시글 제목
         private String content; // 게시글 내용
-        private String userName; // 작성자 이름
+        private String nickname; // 작성자 이름
         private String date; // 게시글 작성일
         private int likeCount; // 게시글 좋아요 수
 
         @Builder
-        public BoardRes(Long boardId, String title, String content, String userName, LocalDateTime date, int likeCount){
+        public BoardRes(Long boardId, String title, String content, String nickname, LocalDateTime date, int likeCount){
             this.boardId = boardId;
             this.title = title;
             this.content = content;
-            this.userName = userName;
+            this.nickname = nickname;
             this.date = date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
             this.likeCount =likeCount;
         }

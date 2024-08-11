@@ -73,7 +73,7 @@ public class ThemeService {
                             .boardId(board.getId())
                             .title(board.getTitle())
                             .content(board.getContent())
-                            .userName(board.getUser().getUsername())
+                            .nickname(board.getUser().getNickname())
                             .date(board.getCreatedDate())
                             .likeCount(likeCount)
                             .build();

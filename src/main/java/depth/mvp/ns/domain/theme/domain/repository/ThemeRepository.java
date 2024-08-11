@@ -13,6 +13,6 @@ import java.util.Optional;
 public interface ThemeRepository extends JpaRepository<Theme, Long> {
     Optional<Theme> findByDate(LocalDate today);
 
-    @Query("SELECT COUNT(l) FROM ThemeLike l WHERE l.theme.id = :themeId AND l.status = 'ACTICE'")
+    @Query("SELECT COUNT(l) FROM ThemeLike l WHERE l.theme.id = :themeId AND l.status = 'ACTIVE'")
     int countLikesByThemeId(@Param("themeId") Long themeId);
 }
