@@ -77,20 +77,23 @@ public class UserController {
         return userService.getUInfoByNickname(null, nickname);
     }
 
-    @GetMapping("/board/like")
-    public ResponseEntity<?> findLikedBoardsByUser(
+    @GetMapping("/board")
+    public ResponseEntity<?> findMyBoards(
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "date") String sortBy) {   // date, like, currentLike
-        return userLikeService.getLikedBoardsByUser(customUserDetails, page, sortBy);
+            @RequestParam(defaultValue = "false") boolean filterDrafts,
+            @RequestParam(defaultValue = "date") String sortBy) {   // date, like
+        return userLikeService.getMyBoards(customUserDetails, page, filterDrafts, sortBy);
     }
 
-    @GetMapping("/board/like/search")
-    public ResponseEntity<?> searchLikedBoardsByUser(
+    @GetMapping("/board/search")
+    public ResponseEntity<?> searchMyBoards(
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "false") boolean filterDrafts,
             @RequestParam String keyword,
             @RequestParam(defaultValue = "date") String sortBy) {
-        return userLikeService.searchLikedBoardsByUser(customUserDetails, page, keyword, sortBy);
+        return userLikeService.searchMyBoards(customUserDetails, page, keyword, filterDrafts, sortBy);
     }
+
 }

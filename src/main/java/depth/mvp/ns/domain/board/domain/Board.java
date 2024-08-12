@@ -53,4 +53,6 @@ public class Board extends BaseEntity {
     public void updateIsPublished(boolean isPublished){
         this.isPublished = isPublished;
     }
+
+    public boolean findIsPublished() { return isPublished; }
 }
