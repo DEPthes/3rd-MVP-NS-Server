@@ -12,6 +12,7 @@ import depth.mvp.ns.domain.common.Status;
 import depth.mvp.ns.domain.board.dto.response.BoardDetailRes;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
+import depth.mvp.ns.domain.theme_like.domain.repository.ThemeLikeRepository;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.domain.repository.UserRepository;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
@@ -36,6 +37,7 @@ public class BoardService {
     private final BoardLikeRepository boardLikeRepository;
     private final UserRepository userRepository;
     private final ThemeRepository themeRepository;
+    private final ThemeLikeRepository themeLikeRepository;
 
     @Transactional
     // 게시글 임시 저장
@@ -230,24 +232,30 @@ public class BoardService {
     // 게시글 조회
     public ResponseEntity<?> getBoardDetail(Long boardId, CustomUserDetails customUserDetails) {
         Board board = validateBoard(boardId);
+        Theme theme = validateTheme(board.getTheme().getId());
 
         // 회원인지 여부에 따른 처리
         Long userId = null;
         boolean owner = false;
-        boolean liked = false;
+        boolean likedBoard = false;
+        boolean likedTheme = false;
 
         if (customUserDetails != null) {
             User user = validateUser(customUserDetails);
-            userId = customUserDetails.getId();
+            userId = user.getId();
+            // 사용자 본인이 쓴 게시물인지 확인
             owner = userId.equals(board.getUser().getId());
             // 사용자가 특정 게시물에 좋아요를 눌렀는지 여부 확인
-            liked = boardLikeRepository.existsByBoardAndUserAndStatus(board, user, Status.ACTIVE);
+            likedBoard = boardLikeRepository.existsByBoardAndUserAndStatus(board, user, Status.ACTIVE);
+            // 사용자가 특정 주제에 좋아요를 눌렀는지 여부 확인
+            likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
         }
 
         BoardDetailRes boardDetailRes = BoardDetailRes.builder()
                 .userId(board.getUser().getId())
                 .owner(owner)
-                .liked(liked)
+                .likedBoard(likedBoard)
+                .likedTheme(likedTheme)
                 .nickname(board.getUser().getNickname())
                 .imageUrl(board.getUser().getImageUrl())
                 .themeContent(board.getTheme().getContent())
