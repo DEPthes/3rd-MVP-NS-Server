@@ -53,8 +53,7 @@ public class ThemeService {
 
         // 주제에 대한 좋아요 여부 확인하고 응답값 넘겨주기
         if(customUserDetails != null){
-            User user = userRepository.findById(customUserDetails.getId())
-                        .orElseThrow(() -> new DefaultException(ErrorCode.USER_NOT_FOUND));
+            User user = validateUser(customUserDetails.getId());
             userId = user.getId();
             likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
         }
@@ -137,9 +136,7 @@ public class ThemeService {
 
     // 주제 상세 조회
     public ResponseEntity<?> getThemeDetail(Long themeId, String sortBy, Pageable pageable, CustomUserDetails customUserDetails) {
-        Theme theme = themeRepository.findById(themeId)
-                .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND,  "주제를 찾을 수 없습니다."));
-
+        Theme theme = validateTheme(themeId);
         Page<Board> boardPage;
 
         switch (sortBy) {
@@ -175,8 +172,7 @@ public class ThemeService {
 
         // 주제에 대한 좋아요 여부 확인하고 응답값 넘겨주기
         if(customUserDetails != null){
-            User user = userRepository.findById(customUserDetails.getId())
-                    .orElseThrow(() -> new DefaultException(ErrorCode.USER_NOT_FOUND));
+            User user = validateUser(customUserDetails.getId());
             userId = user.getId();
             likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
         }
