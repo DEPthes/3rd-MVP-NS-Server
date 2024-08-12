@@ -32,5 +32,6 @@ public interface BoardLikeRepository extends JpaRepository<BoardLike, Long> {
             @Param("status") Status status,
             @Param("keyword") String keyword
     );
+    boolean existsByBoardAndUserAndStatus(Board board, User user, Status status);
 
 }

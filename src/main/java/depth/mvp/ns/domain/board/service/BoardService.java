@@ -227,7 +227,7 @@ public class BoardService {
             board.getUser().addPoint(1);
         }
     }
-
+    // 게시글 조회
     public ResponseEntity<?> getBoardDetail(Long boardId, CustomUserDetails customUserDetails) {
         Board board = validateBoard(boardId);
 
@@ -237,10 +237,11 @@ public class BoardService {
         boolean liked = false;
 
         if (customUserDetails != null) {
+            User user = validateUser(customUserDetails);
             userId = customUserDetails.getId();
             owner = userId.equals(board.getUser().getId());
-            // 사용자가 특정 게시물에 좋아요를 눌렀는지 여부
-            liked = boardRepository.isBoardLikedByUser(boardId, userId);
+            // 사용자가 특정 게시물에 좋아요를 눌렀는지 여부 확인
+            liked = boardLikeRepository.existsByBoardAndUserAndStatus(board, user, Status.ACTIVE);
         }
 
         BoardDetailRes boardDetailRes = BoardDetailRes.builder()
