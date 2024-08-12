@@ -6,6 +6,7 @@ import depth.mvp.ns.domain.board.dto.request.PublishReq;
 import depth.mvp.ns.domain.board.dto.request.SaveDraftReq;
 import depth.mvp.ns.domain.board.dto.request.UpdateReq;
 import depth.mvp.ns.domain.board.dto.response.BoardLikeRes;
+import depth.mvp.ns.domain.board.dto.response.ThemeLikeRes;
 import depth.mvp.ns.domain.board_like.domain.BoardLike;
 import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
 import depth.mvp.ns.domain.common.Status;
@@ -57,9 +58,14 @@ public class BoardService {
 
         boardRepository.save(board);
 
+        // 주제에 대한 좋아요 여부 확인하고 응답값 넘겨주기
+        boolean themeLiked = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
+        ThemeLikeRes themeLikeRes = ThemeLikeRes.builder().liked(themeLiked).build();
+
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
                 .information("임시 저장이 완료되었습니다.")
+                .information(themeLikeRes)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
@@ -85,6 +91,10 @@ public class BoardService {
 
         boardRepository.save(board);
 
+        // 주제에 대한 좋아요 여부 확인
+        boolean themeLiked = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
+        ThemeLikeRes themeLikeRes = ThemeLikeRes.builder().liked(themeLiked).build();
+
         // 게시 시 첫 게시글 작성 보너스를 부여
         if (!user.isCompleteFirstPost()) {
             user.addPoint(5);
@@ -106,6 +116,7 @@ public class BoardService {
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
                 .information("게시글이 작성되었습니다.")
+                .information(themeLikeRes)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
