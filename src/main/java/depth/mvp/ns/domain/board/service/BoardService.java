@@ -5,6 +5,10 @@ import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.board.dto.request.PublishReq;
 import depth.mvp.ns.domain.board.dto.request.SaveDraftReq;
 import depth.mvp.ns.domain.board.dto.request.UpdateReq;
+import depth.mvp.ns.domain.board.dto.response.BoardLikeRes;
+import depth.mvp.ns.domain.board_like.domain.BoardLike;
+import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
+import depth.mvp.ns.domain.common.Status;
 import depth.mvp.ns.domain.board.dto.response.BoardDetailRes;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
@@ -29,6 +33,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class BoardService {
     private final BoardRepository boardRepository;
+    private final BoardLikeRepository boardLikeRepository;
     private final UserRepository userRepository;
     private final ThemeRepository themeRepository;
 
@@ -167,6 +172,60 @@ public class BoardService {
                 .user(user)
                 .theme(theme)
                 .build();
+    }
+
+    // 게시글 좋아요
+    @Transactional
+    public ResponseEntity<?> hitLikeButton(CustomUserDetails customUserDetails, Long boardId) {
+        User user = validateUser(customUserDetails);
+        Board board = validateBoard(boardId);
+
+        Optional<BoardLike> optionalBoardLike = boardLikeRepository.findByUserAndBoard(user, board);
+
+        boolean isLiked = true;
+        if (optionalBoardLike.isEmpty()) {
+            // 기존에 좋아요를 누르지 않은 경우
+            handleFirstLike(user, board);
+        } else {
+            // 기존에 좋아요를 누른 경우: 상태에 따라 처리
+            handleExistingLike(optionalBoardLike.get(), user, board);
+            isLiked = optionalBoardLike.get().getStatus() == Status.ACTIVE;
+        }
+
+        BoardLikeRes boardLikeRes = BoardLikeRes.builder().liked(isLiked).build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(boardLikeRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    private void handleFirstLike(User user, Board board) {
+        BoardLike boardLike = BoardLike.builder()
+                .user(user)
+                .board(board)
+                .build();
+        boardLikeRepository.save(boardLike);
+
+        // 사용자 및 게시물 작성자에게 포인트 부여
+        user.addPoint(1);
+        board.getUser().addPoint(1);
+    }
+
+    private void handleExistingLike(BoardLike boardLike, User user, Board board) {
+        if (boardLike.getStatus() == Status.ACTIVE) {
+            // 좋아요 취소
+            boardLike.updateStatus(Status.DELETE);
+            user.addPoint(-1);
+            board.getUser().addPoint(-1);
+        } else {
+            // 좋아요 다시 활성화
+            boardLike.updateStatus(Status.ACTIVE);
+            user.addPoint(1);
+            board.getUser().addPoint(1);
+        }
     }
 
     public ResponseEntity<?> getBoardDetail(Long boardId, CustomUserDetails customUserDetails) {
