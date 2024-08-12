@@ -52,9 +52,29 @@ public class UserController {
 
     @GetMapping("/ranking")
     public ResponseEntity<?> getRanking(
+            @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(required = false, defaultValue = "TOTAL") RankingType type
-            ) {
-        return ResponseEntity.ok(userService.getRankingData(type));
+    ) {
+        if (customUserDetails != null) {
+            return ResponseEntity.ok(userService.getRankingData(customUserDetails.getId(), type));
+        }
+        return ResponseEntity.ok(userService.getRankingData(null, type));
+    }
+
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<?> getUserProfile(@PathVariable(required = true) Long userId) {
+        return userService.getProfile(userId);
+    }
+
+    @GetMapping("/nickname")
+    public ResponseEntity<?> getUserInfoByNickname(
+            @CurrentUser CustomUserDetails customUserDetails,
+            @RequestParam(required = true) String nickname
+    ) {
+        if (customUserDetails != null) {
+            return userService.getUInfoByNickname(customUserDetails.getId(), nickname);
+        }
+        return userService.getUInfoByNickname(null, nickname);
     }
 
     @GetMapping("/board")
