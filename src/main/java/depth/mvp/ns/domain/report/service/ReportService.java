@@ -17,11 +17,13 @@ import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
+import depth.mvp.ns.global.payload.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.openkoreantext.processor.KoreanTokenJava;
 import org.openkoreantext.processor.OpenKoreanTextProcessorJava;
 import org.openkoreantext.processor.tokenizer.KoreanTokenizer;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,8 +56,18 @@ public class ReportService {
 
 
     public ResponseEntity<?> findReport(CustomUserDetails customUserDetails, LocalDate parsedDate) {
-        Theme theme = themeRepository.findByDate(parsedDate)
-                .orElseThrow(() -> new EntityNotFoundException("Theme not found for the given date: " + parsedDate));
+        Optional<Theme> optionalTheme = themeRepository.findByDate(parsedDate);
+
+        if (optionalTheme.isEmpty()) {
+            ApiResponse apiResponse = ApiResponse.builder()
+                    .check(false)
+                    .information("No theme found for the given date.")
+                    .build();
+            return ResponseEntity.ok(apiResponse);
+        }
+
+        Theme theme = optionalTheme.get();
+
 
         Optional<Report> optionalReport = reportRepository.findByTheme(theme);
 
@@ -65,27 +77,23 @@ public class ReportService {
             int writtenTotal = reportRepository.getBoardCount(theme);
             Board longestBoardByTheme = boardRepository.findLongestBoardByTheme(theme);
 
-            if (longestBoardByTheme == null) {
-                return ResponseEntity.ok(ReportRes.builder()
-                        .selectedDate(parsedDate)
-                        .themeName(theme.getContent())
-                        .writtenTotal(writtenTotal)
-                        .longestWriter(null)
-                        .build());
-            }
 
-            User user = longestBoardByTheme.getUser();
+            ReportRes.LongestWriter longestWriter = null;
+            if (longestBoardByTheme != null && longestBoardByTheme.getUser() != null) {
+                User user = longestBoardByTheme.getUser();
+                longestWriter = new ReportRes.LongestWriter(
+                        user.getId(),
+                        user.getNickname(),
+                        user.getImageUrl(),
+                        longestBoardByTheme.getLength()
+                );
+            }
 
             return ResponseEntity.ok(ReportRes.builder()
                     .selectedDate(parsedDate)
                     .themeName(theme.getContent())
                     .writtenTotal(writtenTotal)
-                    .longestWriter(new ReportRes.LongestWriter(
-                            user.getId(),
-                            user.getNickname(),
-                            user.getImageUrl(),
-                            longestBoardByTheme.getLength()
-                    ))
+                    .longestWriter(longestWriter) // longestWriter는 null일 수 있음
                     .build());
         } else {
             // 과거 레포트 조회
