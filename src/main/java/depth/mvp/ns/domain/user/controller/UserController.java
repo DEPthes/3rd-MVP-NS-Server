@@ -52,19 +52,25 @@ public class UserController {
 
     @GetMapping("/ranking")
     public ResponseEntity<?> getRanking(
-            @RequestParam(required = false, defaultValue = "TOTAL") RankingType type) {
-        return ResponseEntity.ok(userService.getRankingData(type));
+            @CurrentUser CustomUserDetails customUserDetails,
+            @RequestParam(required = false, defaultValue = "TOTAL") RankingType type
+    ) {
+        if (customUserDetails != null) {
+            return ResponseEntity.ok(userService.getRankingData(customUserDetails.getId(), type));
+        }
+        return ResponseEntity.ok(userService.getRankingData(null, type));
     }
 
-    @GetMapping("/profile")
-    public ResponseEntity<?> getUserProfile(@RequestParam(required = true) Long userId) {
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<?> getUserProfile(@PathVariable(required = true) Long userId) {
         return userService.getProfile(userId);
     }
 
     @GetMapping("/nickname")
     public ResponseEntity<?> getUserInfoByNickname(
             @CurrentUser CustomUserDetails customUserDetails,
-            @RequestParam(required = true) String nickname) {
+            @RequestParam(required = true) String nickname
+    ) {
         if (customUserDetails != null) {
             return userService.getUInfoByNickname(customUserDetails.getId(), nickname);
         }

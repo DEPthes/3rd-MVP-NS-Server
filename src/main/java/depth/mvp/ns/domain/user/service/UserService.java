@@ -120,8 +120,8 @@ public class UserService {
         return optionalUser.get();
     }
 
-    public List<UserRankingRes> getRankingData(RankingType type) {
-        return userRepository.getTop3ByPointDesc(type);
+    public UserRankingRes getRankingData(Long id, RankingType type) {
+        return userRepository.getNRankingDesc(id, type);
     }
 
     // 추가된 메서드: 사용자 프로필 정보 조회

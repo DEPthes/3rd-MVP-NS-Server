@@ -58,13 +58,6 @@ public class SecurityConfig {
                                 antMatcher("/"),
                                 antMatcher("/error"),
                                 antMatcher("/favicon.ico"),
-                                antMatcher("/**/*.png"),
-                                antMatcher("/**/*.gif"),
-                                antMatcher("/**/*.svg"),
-                                antMatcher("/**/*.jpg"),
-                                antMatcher("/**/*.html"),
-                                antMatcher("/**/*.css"),
-                                antMatcher("/**/*.js"),
                                 antMatcher("/swagger"),
                                 antMatcher("/swagger-ui.html"),
                                 antMatcher("/swagger-ui/**"),
@@ -75,9 +68,9 @@ public class SecurityConfig {
                                 antMatcher("/api/v1/report/**"),
                                 antMatcher("/api/v1/theme/today"),
                                 antMatcher("/api/v1/report/generate"),
-                                antMatcher("/api/v1/user/profile"),
+                                antMatcher("/api/v1/user/profile/**"),
                                 antMatcher("/api/v1/user/nickname"),
-                                antMatcher("/api/v1/theme/**"))
+                                antMatcher("/api/v1/user/ranking"))
                         .permitAll()
                         .anyRequest()
                         .authenticated());

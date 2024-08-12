@@ -3,7 +3,6 @@ package depth.mvp.ns.domain.report.service;
 import com.querydsl.core.Tuple;
 import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
-import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
 import depth.mvp.ns.domain.report.domain.Report;
 import depth.mvp.ns.domain.report.domain.WordCount;
 import depth.mvp.ns.domain.report.domain.repository.ReportRepository;
@@ -17,6 +16,7 @@ import depth.mvp.ns.domain.s3.service.S3Uploader;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
 import depth.mvp.ns.domain.user.domain.User;
+import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.openkoreantext.processor.KoreanTokenJava;
@@ -33,6 +33,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,9 +53,9 @@ public class ReportService {
     private final S3Uploader s3Uploader;
 
 
-    public ResponseEntity<?> findReport(LocalDate parsedDate) {
+    public ResponseEntity<?> findReport(CustomUserDetails customUserDetails, LocalDate parsedDate) {
         Theme theme = themeRepository.findByDate(parsedDate)
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException("Theme not found for the given date: " + parsedDate));
 
         Optional<Report> optionalReport = reportRepository.findByTheme(theme);
 
@@ -80,6 +81,7 @@ public class ReportService {
                     .themeName(theme.getContent())
                     .writtenTotal(writtenTotal)
                     .longestWriter(new ReportRes.LongestWriter(
+                            user.getId(),
                             user.getNickname(),
                             user.getImageUrl(),
                             longestBoardByTheme.getLength()
@@ -92,6 +94,9 @@ public class ReportService {
             Board longestBoardByTheme = boardRepository.findLongestBoardByTheme(theme);
             User user = longestBoardByTheme.getUser();
             List<ReportDetail> allBestReportTypeByReport = reportDetailRepository.findAllBestReportTypeByReport(report);
+            Long bestSelectedCountByUserId = customUserDetails != null
+                    ? reportDetailRepository.findBestSelectedCountByUserId(customUserDetails.getId())
+                    : null;
 
             int writtenTotal = reportRepository.getBoardCount(theme);
 
@@ -100,9 +105,13 @@ public class ReportService {
                         Optional<Board> board = boardRepository.findById(reportDetail.getReport().getId());// 작성 중 To do
                         Tuple mostLikedBoardCountAndTitleWithUserAndTheme = boardRepository.findMostLikedBoardCountAndTitleWithUserAndTheme(reportDetail.getUser(), theme);
 
+                        boolean isCurrentUser = customUserDetails != null && customUserDetails.getId().equals(reportDetail.getUser().getId());
+
 
                         if (mostLikedBoardCountAndTitleWithUserAndTheme == null) {
                             return PrevReportRes.BestPost.builder()
+                                    .isCurrentUser(isCurrentUser)
+                                    .userId(reportDetail.getUser().getId())
                                     .nickname(reportDetail.getUser().getNickname())
                                     .imageUrl(reportDetail.getUser().getImageUrl())
                                     .title("유효한 제목 없음.")
@@ -110,13 +119,24 @@ public class ReportService {
                                     .build();
                         }
 
+
+
                         Long likeCount = mostLikedBoardCountAndTitleWithUserAndTheme.get(0, Long.class);
                         String title = mostLikedBoardCountAndTitleWithUserAndTheme.get(1, String.class);
+                        LocalDateTime localDateTime = mostLikedBoardCountAndTitleWithUserAndTheme.get(2, LocalDateTime.class);
+                        Long boardId = mostLikedBoardCountAndTitleWithUserAndTheme.get(3, Long.class);
+
+
                         return PrevReportRes.BestPost.builder()
+                                .isCurrentUser(isCurrentUser)
+                                .userId(reportDetail.getUser().getId())
                                 .nickname(reportDetail.getUser().getNickname())
                                 .imageUrl(reportDetail.getUser().getImageUrl())
-                                .title(title) // 작성 중 To do
-                                .likeCount(likeCount) // 작성 중 To do
+                                .title(title)
+                                .likeCount(likeCount)
+                                .bestSelectionCount(bestSelectedCountByUserId)
+                                .boardCreatedAt(localDateTime)
+                                .boardId(boardId)
                                 .build();
                     })
                     .collect(Collectors.toList());
@@ -129,6 +149,7 @@ public class ReportService {
                     .topWord(report.getTopWord())
                     .count(report.getCount())
                     .longestWriter(new ReportRes.LongestWriter(
+                            user.getId(),
                             user.getNickname(),
                             user.getImageUrl(),
                             longestBoardByTheme.getLength()

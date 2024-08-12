@@ -1,6 +1,8 @@
 package depth.mvp.ns.domain.report.controller;
 
 import depth.mvp.ns.domain.report.service.ReportService;
+import depth.mvp.ns.global.config.security.token.CurrentUser;
+import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,9 +24,13 @@ public class ReportController {
 
     @GetMapping("/{selectedDate}")
     public ResponseEntity<?> getTodayReport(
+            @CurrentUser CustomUserDetails customUserDetails,
             @PathVariable String selectedDate
     ) {
         LocalDate parsedDate = LocalDate.parse(selectedDate);
-        return reportService.findReport(parsedDate);
+        if (customUserDetails != null) {
+            return reportService.findReport(customUserDetails, parsedDate);
+        }
+        return reportService.findReport(null, parsedDate);
     }
 }
