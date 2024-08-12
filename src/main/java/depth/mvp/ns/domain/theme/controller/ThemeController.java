@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.*;
 public class ThemeController {
     private final ThemeService themeService;
     @GetMapping("/today")
-    public ResponseEntity<?> getTodayTheme(){
-        return themeService.getTodayTheme();
+    public ResponseEntity<?> getTodayTheme(@CurrentUser CustomUserDetails customUserDetails){
+        return themeService.getTodayTheme(customUserDetails);
     }
 
     @PostMapping("/{themeId}/like")

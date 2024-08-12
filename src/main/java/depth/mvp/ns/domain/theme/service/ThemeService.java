@@ -13,6 +13,7 @@ import depth.mvp.ns.domain.theme_like.domain.ThemeLike;
 import depth.mvp.ns.domain.theme_like.domain.repository.ThemeLikeRepository;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.domain.repository.UserRepository;
+import depth.mvp.ns.global.config.security.token.CurrentUser;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.error.DefaultException;
 import depth.mvp.ns.global.error.InvalidParameterException;
@@ -42,14 +43,26 @@ public class ThemeService {
 
     private  final BoardRepository boardRepository;
     // 오늘의 주제 조회
-    public ResponseEntity<?> getTodayTheme() {
-
+    public ResponseEntity<?> getTodayTheme(@CurrentUser CustomUserDetails customUserDetails) {
         Theme theme = themeRepository.findByDate(LocalDate.now())
                 .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "주제를 찾을 수 없습니다."));
 
+        // 회원인지 여부에 따른 처리
+        Long userId = null;
+        boolean likedTheme = false; // 주제 좋아요 여부
+
+        // 주제에 대한 좋아요 여부 확인하고 응답값 넘겨주기
+        if(customUserDetails != null){
+            User user = userRepository.findById(customUserDetails.getId())
+                        .orElseThrow(() -> new DefaultException(ErrorCode.USER_NOT_FOUND));
+            userId = user.getId();
+            likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
+        }
 
         TodayThemeRes todayThemeRes = TodayThemeRes.builder()
                 .content(theme.getContent())
+                .userId(userId)
+                .likedTheme(likedTheme)
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
