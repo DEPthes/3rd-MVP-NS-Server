@@ -68,4 +68,5 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
     List<Board> findByUser(User user);
 
 
+
 }

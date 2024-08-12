@@ -6,13 +6,16 @@ import depth.mvp.ns.domain.board.dto.request.PublishReq;
 import depth.mvp.ns.domain.board.dto.request.SaveDraftReq;
 import depth.mvp.ns.domain.board.dto.request.UpdateReq;
 import depth.mvp.ns.domain.board.dto.response.BoardLikeRes;
+import depth.mvp.ns.domain.board.dto.response.ThemeLikeRes;
 import depth.mvp.ns.domain.board_like.domain.BoardLike;
 import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
 import depth.mvp.ns.domain.common.Status;
 import depth.mvp.ns.domain.point.domain.Point;
 import depth.mvp.ns.domain.point.domain.repository.PointRepository;
+import depth.mvp.ns.domain.board.dto.response.BoardDetailRes;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
+import depth.mvp.ns.domain.theme_like.domain.repository.ThemeLikeRepository;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.domain.repository.UserRepository;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
@@ -27,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -38,6 +42,7 @@ public class BoardService {
     private final UserRepository userRepository;
     private final ThemeRepository themeRepository;
     private final PointRepository pointRepository;
+    private final ThemeLikeRepository themeLikeRepository;
 
     @Transactional
     // 게시글 임시 저장
@@ -266,4 +271,46 @@ public class BoardService {
         pointRepository.delete(point);
     }
 
+    // 게시글 조회
+    public ResponseEntity<?> getBoardDetail(Long boardId, CustomUserDetails customUserDetails) {
+        Board board = validateBoard(boardId);
+        Theme theme = validateTheme(board.getTheme().getId());
+
+        // 회원인지 여부에 따른 처리
+        Long userId = null;
+        boolean owner = false;
+        boolean likedBoard = false;
+        boolean likedTheme = false;
+
+        if (customUserDetails != null) {
+            User user = validateUser(customUserDetails);
+            userId = user.getId();
+            // 사용자 본인이 쓴 게시물인지 확인
+            owner = userId.equals(board.getUser().getId());
+            // 사용자가 특정 게시물에 좋아요를 눌렀는지 여부 확인
+            likedBoard = boardLikeRepository.existsByBoardAndUserAndStatus(board, user, Status.ACTIVE);
+            // 사용자가 특정 주제에 좋아요를 눌렀는지 여부 확인
+            likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
+        }
+
+        BoardDetailRes boardDetailRes = BoardDetailRes.builder()
+                .userId(board.getUser().getId())
+                .owner(owner)
+                .likedBoard(likedBoard)
+                .likedTheme(likedTheme)
+                .nickname(board.getUser().getNickname())
+                .imageUrl(board.getUser().getImageUrl())
+                .themeContent(board.getTheme().getContent())
+                .boardTitle(board.getTitle())
+                .boardContent(board.getContent())
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(boardDetailRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+
+    }
 }

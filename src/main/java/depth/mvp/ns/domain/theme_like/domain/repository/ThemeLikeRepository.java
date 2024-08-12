@@ -17,6 +17,7 @@ import java.util.Optional;
 @Repository
 public interface ThemeLikeRepository extends JpaRepository<ThemeLike, Long> {
     Optional<ThemeLike> findByUserAndTheme(User user, Theme theme);
+    boolean existsByThemeAndUserAndStatus(Theme theme, User user, Status status);
 
     List<ThemeLike> findAllByUserAndStatus(User user, Status status);
 

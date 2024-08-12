@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.*;
 public class ThemeController {
     private final ThemeService themeService;
     @GetMapping("/today")
-    public ResponseEntity<?> getTodayTheme(){
-        return themeService.getTodayTheme();
+    public ResponseEntity<?> getTodayTheme(@CurrentUser CustomUserDetails customUserDetails){
+        return themeService.getTodayTheme(customUserDetails);
     }
 
     @PostMapping("/{themeId}/like")
@@ -45,11 +45,12 @@ public class ThemeController {
 
     @GetMapping("/{themeId}")
     public ResponseEntity<?> getThemeDetail(
+            @CurrentUser CustomUserDetails customUserDetails,
             @PathVariable Long themeId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "2") int size,
             @RequestParam(defaultValue = "date") String sortBy) {
         Pageable pageable = PageRequest.of(page, size);
-        return themeService.getThemeDetail(themeId, sortBy, pageable);
+        return themeService.getThemeDetail(themeId, sortBy, pageable, customUserDetails);
     }
 }

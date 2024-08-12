@@ -10,13 +10,17 @@ import java.util.List;
 
 @Getter
 public class ThemeDetailRes {
+    private  Long userId; // 사용자ID
+    private  boolean likedTheme; // 주제 좋아요 여부
     private String content; // 주제 내용
     private String date; // 발행일
     private int likeCount; // 주제 좋아요 수
     private List<BoardRes> boards; // 게시글 목록
 
     @Builder
-    public ThemeDetailRes(String content, LocalDate date, int likeCount, List<BoardRes> boards){
+    public ThemeDetailRes(Long userId, boolean likedTheme, String content, LocalDate date, int likeCount, List<BoardRes> boards){
+        this.userId = userId;
+        this.likedTheme = likedTheme;
         this.content = content;
         this.date = date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
         this.likeCount = likeCount;
