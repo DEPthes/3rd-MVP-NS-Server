@@ -65,8 +65,12 @@ public class SecurityConfig {
                                 antMatcher("/api-docs/**"),
                                 antMatcher("/v3/api-docs/**"),
                                 antMatcher("/auth/**"),
+                                antMatcher("/api/v1/report/**"),
+                                antMatcher("/api/v1/theme/today"),
                                 antMatcher("/api/v1/report/generate"),
-                                antMatcher("/api/v1/theme/**"))
+                                antMatcher("/api/v1/user/profile/**"),
+                                antMatcher("/api/v1/user/nickname"),
+                                antMatcher("/api/v1/user/ranking"))
                         .permitAll()
                         .anyRequest()
                         .authenticated());

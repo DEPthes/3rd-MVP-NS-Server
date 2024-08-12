@@ -1,23 +1,30 @@
 package depth.mvp.ns.domain.report.service;
 
+import com.querydsl.core.Tuple;
 import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
-import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
 import depth.mvp.ns.domain.report.domain.Report;
 import depth.mvp.ns.domain.report.domain.WordCount;
 import depth.mvp.ns.domain.report.domain.repository.ReportRepository;
 import depth.mvp.ns.domain.report.domain.repository.WordCountRepository;
+import depth.mvp.ns.domain.report.dto.response.PrevReportRes;
+import depth.mvp.ns.domain.report.dto.response.ReportRes;
 import depth.mvp.ns.domain.report_detail.domain.ReportDetail;
 import depth.mvp.ns.domain.report_detail.domain.ReportType;
 import depth.mvp.ns.domain.report_detail.domain.repository.ReportDetailRepository;
 import depth.mvp.ns.domain.s3.service.S3Uploader;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
+import depth.mvp.ns.domain.user.domain.User;
+import depth.mvp.ns.global.config.security.token.CustomUserDetails;
+import depth.mvp.ns.global.payload.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.openkoreantext.processor.KoreanTokenJava;
 import org.openkoreantext.processor.OpenKoreanTextProcessorJava;
 import org.openkoreantext.processor.tokenizer.KoreanTokenizer;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import scala.collection.Seq;
@@ -28,10 +35,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -46,9 +51,122 @@ public class ReportService {
     private final WordCountRepository wordCountRepository;
     private final ReportRepository reportRepository;
     private final ReportDetailRepository reportDetailRepository;
-    private final BoardLikeRepository boardLikeRepository;
     private final CloudImageGenerator cloudImageGenerator;
     private final S3Uploader s3Uploader;
+
+
+    public ResponseEntity<?> findReport(CustomUserDetails customUserDetails, LocalDate parsedDate) {
+        Optional<Theme> optionalTheme = themeRepository.findByDate(parsedDate);
+
+        if (optionalTheme.isEmpty()) {
+            ApiResponse apiResponse = ApiResponse.builder()
+                    .check(false)
+                    .information("No theme found for the given date.")
+                    .build();
+            return ResponseEntity.ok(apiResponse);
+        }
+
+        Theme theme = optionalTheme.get();
+
+
+        Optional<Report> optionalReport = reportRepository.findByTheme(theme);
+
+        if (optionalReport.isEmpty()) {
+            // 오늘자 레포트 조회
+
+            int writtenTotal = reportRepository.getBoardCount(theme);
+            Board longestBoardByTheme = boardRepository.findLongestBoardByTheme(theme);
+
+
+            ReportRes.LongestWriter longestWriter = null;
+            if (longestBoardByTheme != null && longestBoardByTheme.getUser() != null) {
+                User user = longestBoardByTheme.getUser();
+                longestWriter = new ReportRes.LongestWriter(
+                        user.getId(),
+                        user.getNickname(),
+                        user.getImageUrl(),
+                        longestBoardByTheme.getLength()
+                );
+            }
+
+            return ResponseEntity.ok(ReportRes.builder()
+                    .selectedDate(parsedDate)
+                    .themeName(theme.getContent())
+                    .writtenTotal(writtenTotal)
+                    .longestWriter(longestWriter) // longestWriter는 null일 수 있음
+                    .build());
+        } else {
+            // 과거 레포트 조회
+
+            Report report = optionalReport.get();
+            Board longestBoardByTheme = boardRepository.findLongestBoardByTheme(theme);
+            User user = longestBoardByTheme.getUser();
+            List<ReportDetail> allBestReportTypeByReport = reportDetailRepository.findAllBestReportTypeByReport(report);
+            Long bestSelectedCountByUserId = customUserDetails != null
+                    ? reportDetailRepository.findBestSelectedCountByUserId(customUserDetails.getId())
+                    : null;
+
+            int writtenTotal = reportRepository.getBoardCount(theme);
+
+            List<PrevReportRes.BestPost> bestPosts = allBestReportTypeByReport.stream()
+                    .map(reportDetail -> {
+                        Optional<Board> board = boardRepository.findById(reportDetail.getReport().getId());// 작성 중 To do
+                        Tuple mostLikedBoardCountAndTitleWithUserAndTheme = boardRepository.findMostLikedBoardCountAndTitleWithUserAndTheme(reportDetail.getUser(), theme);
+
+                        boolean isCurrentUser = customUserDetails != null && customUserDetails.getId().equals(reportDetail.getUser().getId());
+
+
+                        if (mostLikedBoardCountAndTitleWithUserAndTheme == null) {
+                            return PrevReportRes.BestPost.builder()
+                                    .isCurrentUser(isCurrentUser)
+                                    .userId(reportDetail.getUser().getId())
+                                    .nickname(reportDetail.getUser().getNickname())
+                                    .imageUrl(reportDetail.getUser().getImageUrl())
+                                    .title("유효한 제목 없음.")
+                                    .likeCount(0L)
+                                    .build();
+                        }
+
+
+
+                        Long likeCount = mostLikedBoardCountAndTitleWithUserAndTheme.get(0, Long.class);
+                        String title = mostLikedBoardCountAndTitleWithUserAndTheme.get(1, String.class);
+                        LocalDateTime localDateTime = mostLikedBoardCountAndTitleWithUserAndTheme.get(2, LocalDateTime.class);
+                        Long boardId = mostLikedBoardCountAndTitleWithUserAndTheme.get(3, Long.class);
+
+
+                        return PrevReportRes.BestPost.builder()
+                                .isCurrentUser(isCurrentUser)
+                                .userId(reportDetail.getUser().getId())
+                                .nickname(reportDetail.getUser().getNickname())
+                                .imageUrl(reportDetail.getUser().getImageUrl())
+                                .title(title)
+                                .likeCount(likeCount)
+                                .bestSelectionCount(bestSelectedCountByUserId)
+                                .boardCreatedAt(localDateTime)
+                                .boardId(boardId)
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(PrevReportRes.builder()
+                    .selectedDate(parsedDate)
+                    .themeName(theme.getContent())
+                    .writtenTotal(writtenTotal)
+                    .wordCloud(report.getWordCloud())
+                    .topWord(report.getTopWord())
+                    .count(report.getCount())
+                    .longestWriter(new ReportRes.LongestWriter(
+                            user.getId(),
+                            user.getNickname(),
+                            user.getImageUrl(),
+                            longestBoardByTheme.getLength()
+                    ))
+                    .bestPost(bestPosts)
+                    .build());
+        }
+    }
+
 
     @Transactional
     public void generateNReport() {
@@ -98,7 +216,6 @@ public class ReportService {
                 .theme(theme)
                 .wordCloud(null)
                 .build();
-
 
 
         // WordCount 객체 저장 -> 불필요 시 추후 삭제 할 수 있음.
