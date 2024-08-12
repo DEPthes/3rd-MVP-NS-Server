@@ -2,7 +2,6 @@ package depth.mvp.ns.domain.report_detail.domain.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import depth.mvp.ns.domain.report.domain.Report;
-import depth.mvp.ns.domain.report_detail.domain.QReportDetail;
 import depth.mvp.ns.domain.report_detail.domain.ReportDetail;
 import depth.mvp.ns.domain.report_detail.domain.ReportType;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +25,15 @@ public class ReportDetailQueryDslRepositoryImpl implements ReportDetailQueryDslR
                 .where(reportDetail.report.eq(report),
                         reportDetail.reportType.eq(ReportType.BEST))
                 .fetch();
+    }
+
+    @Override
+    public Long findBestSelectedCountByUserId(Long userId) {
+        return queryFactory
+                .select(reportDetail.id.count())
+                .from(reportDetail)
+                .where(reportDetail.user.id.eq(userId),
+                        reportDetail.reportType.eq(ReportType.BEST))
+                .fetchOne();
     }
 }
