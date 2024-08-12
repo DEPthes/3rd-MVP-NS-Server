@@ -3,6 +3,8 @@ package depth.mvp.ns.domain.theme.service;
 import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.common.Status;
+import depth.mvp.ns.domain.point.domain.Point;
+import depth.mvp.ns.domain.point.domain.repository.PointRepository;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
 import depth.mvp.ns.domain.theme.dto.response.ThemeDetailRes;
@@ -13,10 +15,12 @@ import depth.mvp.ns.domain.theme_like.domain.ThemeLike;
 import depth.mvp.ns.domain.theme_like.domain.repository.ThemeLikeRepository;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.domain.repository.UserRepository;
+import depth.mvp.ns.global.config.security.token.CurrentUser;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.error.DefaultException;
 import depth.mvp.ns.global.error.InvalidParameterException;
 import depth.mvp.ns.global.payload.ApiResponse;
+import depth.mvp.ns.global.payload.DefaultAssert;
 import depth.mvp.ns.global.payload.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,17 +43,29 @@ public class ThemeService {
     private final ThemeRepository themeRepository;
     private final ThemeLikeRepository themeLikeRepository;
     private final UserRepository userRepository;
+    private final BoardRepository boardRepository;
+    private final PointRepository pointRepository;
 
-    private  final BoardRepository boardRepository;
     // 오늘의 주제 조회
-    public ResponseEntity<?> getTodayTheme() {
-
+    public ResponseEntity<?> getTodayTheme(@CurrentUser CustomUserDetails customUserDetails) {
         Theme theme = themeRepository.findByDate(LocalDate.now())
                 .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "주제를 찾을 수 없습니다."));
 
+        // 회원인지 여부에 따른 처리
+        Long userId = null;
+        boolean likedTheme = false; // 주제 좋아요 여부
+
+        // 주제에 대한 좋아요 여부 확인하고 응답값 넘겨주기
+        if(customUserDetails != null){
+            User user = validateUser(customUserDetails.getId());
+            userId = user.getId();
+            likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
+        }
 
         TodayThemeRes todayThemeRes = TodayThemeRes.builder()
                 .content(theme.getContent())
+                .userId(userId)
+                .likedTheme(likedTheme)
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
@@ -94,19 +110,27 @@ public class ThemeService {
                 .build();
         themeLikeRepository.save(themeLike);
 
+        int score = 1;
         // 최초 좋아요 시 사용자에게 포인트 부여
-        user.addPoint(1);
+        user.addPoint(score);
+        // 포인트 내역 저장
+        savePointHistory(user, score);
     }
 
     private void handleExistingLike(ThemeLike themeLike, User user) {
+        int score = -1;
         if (themeLike.getStatus() == Status.ACTIVE) {
             // 좋아요 취소
             themeLike.updateStatus(Status.DELETE);
-            user.addPoint(-1);
+            user.addPoint(score);
+            // 포인트 내역 삭제
+            deletePointHistory(user, themeLike.getCreatedDate().toLocalDate(), score);
         } else {
             // 좋아요 다시 활성화
             themeLike.updateStatus(Status.ACTIVE);
-            user.addPoint(1);
+            user.addPoint(Math.abs(score));
+            // 포인트 내역 저장
+            savePointHistory(user, score);
         }
     }
 
@@ -123,10 +147,8 @@ public class ThemeService {
     }
 
     // 주제 상세 조회
-    public ResponseEntity<?> getThemeDetail(Long themeId, String sortBy, Pageable pageable) {
-        Theme theme = themeRepository.findById(themeId)
-                .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND,  "주제를 찾을 수 없습니다."));
-
+    public ResponseEntity<?> getThemeDetail(Long themeId, String sortBy, Pageable pageable, CustomUserDetails customUserDetails) {
+        Theme theme = validateTheme(themeId);
         Page<Board> boardPage;
 
         switch (sortBy) {
@@ -141,6 +163,7 @@ public class ThemeService {
                 errors.rejectValue("sortBy", "invalid", "잘못된 정렬 파라미터입니다.");
                 throw new InvalidParameterException(errors);
         }
+
         List<ThemeDetailRes.BoardRes> boardResList = boardPage.getContent().stream()
                 .map(board -> {
                     int likeCount = boardRepository.countLikesByBoardId(board.getId()); // 게시글 좋아요 수 계산
@@ -155,7 +178,20 @@ public class ThemeService {
                             .build();
                 }).collect(Collectors.toList());
 
+        // 회원인지 여부에 따른 처리
+        Long userId = null;
+        boolean likedTheme = false; // 주제 좋아요 여부
+
+        // 주제에 대한 좋아요 여부 확인하고 응답값 넘겨주기
+        if(customUserDetails != null){
+            User user = validateUser(customUserDetails.getId());
+            userId = user.getId();
+            likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
+        }
+
         ThemeDetailRes themeDetailRes = ThemeDetailRes.builder()
+                .userId(userId)
+                .likedTheme(likedTheme)
                 .content(theme.getContent())
                 .date(theme.getDate())
                 .likeCount(themeRepository.countLikesByThemeId(themeId))
@@ -224,6 +260,21 @@ public class ThemeService {
         return ResponseEntity.ok(apiResponse);
     }
 
+    private void savePointHistory(User user, int score) {
+        Point point = Point.builder()
+                .user(user)
+                .score(score)
+                .build();
+        pointRepository.save(point);
+    }
 
+    private void deletePointHistory(User user, LocalDate date, int score) {
+        // 부여된 날짜 및 score로 point 찾기
+        Optional<Point> pointOptional = pointRepository.findByUserAndCreatedDateAndScore(user, date, score);
+        DefaultAssert.isTrue(pointOptional.isPresent(), "포인트 내역이 존재하지 않습니다.");
+        Point point = pointOptional.get();
+
+        pointRepository.delete(point);
+    }
 
 }

@@ -52,25 +52,48 @@ public class UserController {
 
     @GetMapping("/ranking")
     public ResponseEntity<?> getRanking(
+            @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(required = false, defaultValue = "TOTAL") RankingType type
-            ) {
-        return ResponseEntity.ok(userService.getRankingData(type));
+    ) {
+        if (customUserDetails != null) {
+            return ResponseEntity.ok(userService.getRankingData(customUserDetails.getId(), type));
+        }
+        return ResponseEntity.ok(userService.getRankingData(null, type));
     }
 
-    @GetMapping("/board/like")
-    public ResponseEntity<?> findLikedBoardsByUser(
-            @CurrentUser CustomUserDetails customUserDetails,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "date") String sortBy) {   // date, like, currentLike
-        return userLikeService.getLikedBoardsByUser(customUserDetails, page, sortBy);
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<?> getUserProfile(@PathVariable(required = true) Long userId) {
+        return userService.getProfile(userId);
     }
 
-    @GetMapping("/board/like/search")
-    public ResponseEntity<?> searchLikedBoardsByUser(
+    @GetMapping("/nickname")
+    public ResponseEntity<?> getUserInfoByNickname(
+            @CurrentUser CustomUserDetails customUserDetails,
+            @RequestParam(required = true) String nickname
+    ) {
+        if (customUserDetails != null) {
+            return userService.getUInfoByNickname(customUserDetails.getId(), nickname);
+        }
+        return userService.getUInfoByNickname(null, nickname);
+    }
+
+    @GetMapping("/board")
+    public ResponseEntity<?> findMyBoards(
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "false") boolean filterDrafts,
+            @RequestParam(defaultValue = "date") String sortBy) {   // date, like
+        return userLikeService.getMyBoards(customUserDetails, page, filterDrafts, sortBy);
+    }
+
+    @GetMapping("/board/search")
+    public ResponseEntity<?> searchMyBoards(
+            @CurrentUser CustomUserDetails customUserDetails,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "false") boolean filterDrafts,
             @RequestParam String keyword,
             @RequestParam(defaultValue = "date") String sortBy) {
-        return userLikeService.searchLikedBoardsByUser(customUserDetails, page, keyword, sortBy);
+        return userLikeService.searchMyBoards(customUserDetails, page, keyword, filterDrafts, sortBy);
     }
+
 }

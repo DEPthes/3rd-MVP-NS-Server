@@ -32,5 +32,16 @@ public interface BoardLikeRepository extends JpaRepository<BoardLike, Long> {
             @Param("status") Status status,
             @Param("keyword") String keyword
     );
+    boolean existsByBoardAndUserAndStatus(Board board, User user, Status status);
+
+    @Query("SELECT bl FROM BoardLike bl WHERE bl.user = :user AND bl.status = :status AND " +
+            "(LOWER(bl.board.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(bl.board.theme.content) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<BoardLike> findPagesByUserAndStatusAndBoardFieldsContaining(
+            @Param("user") User user,
+            @Param("status") Status status,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
 
 }

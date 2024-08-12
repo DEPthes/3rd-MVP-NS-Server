@@ -7,11 +7,13 @@ import depth.mvp.ns.domain.user.domain.repository.UserRepository;
 import depth.mvp.ns.domain.user.dto.request.CheckPasswordReq;
 import depth.mvp.ns.domain.user.dto.request.UpdateNicknameReq;
 import depth.mvp.ns.domain.user.dto.response.MyPageRes;
+import depth.mvp.ns.domain.user.dto.response.UserInfoByNicknameRes;
 import depth.mvp.ns.domain.user.dto.response.UserRankingRes;
 import depth.mvp.ns.global.config.security.token.CurrentUser;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.payload.ApiResponse;
 import depth.mvp.ns.global.payload.DefaultAssert;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,7 +68,7 @@ public class UserService {
         if (isDefault) {
             imageName = "default.png";
             imageUrl = "https://ns-s3-image-bucket.s3.amazonaws.com/default.png";
-        } else if (!image.get().isEmpty()){
+        } else if (image.isPresent() && !image.get().isEmpty()) {
             imageName = s3Uploader.uploadImage(image.get());
             imageUrl = s3Uploader.getFullPath(imageName);
         } else {
@@ -111,15 +114,63 @@ public class UserService {
         return ResponseEntity.ok(apiResponse);
     }
 
-    private User validUserById(Long userId){
+    private User validUserById(Long userId) {
         Optional<User> optionalUser = userRepository.findById(userId);
         DefaultAssert.isTrue(optionalUser.isPresent(), "유저 정보가 유효하지 않습니다.");
         return optionalUser.get();
     }
 
-    public List<UserRankingRes> getRankingData(RankingType type) {
-        return userRepository.getTop3ByPointDesc(type);
+    public UserRankingRes getRankingData(Long id, RankingType type) {
+        return userRepository.getNRankingDesc(id, type);
     }
 
+    // 추가된 메서드: 사용자 프로필 정보 조회
+    public ResponseEntity<?> getProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(EntityNotFoundException::new);
 
+        MyPageRes myPageRes = MyPageRes.builder()
+                .userId(userId)
+                .nickname(user.getNickname())
+                .imageUrl(user.getImageUrl())
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(myPageRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    // 추가된 메서드: 닉네임으로 사용자 정보 조회
+    public ResponseEntity<?> getUInfoByNickname(Long userId, String nickname) {
+
+        if (userId != null) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(EntityNotFoundException::new);
+
+            UserInfoByNicknameRes byNickname = userRepository.findByNickname(nickname);
+
+            UserInfoByNicknameRes myInfoByNickname = userRepository.findByNickname(user.getNickname());
+
+            List<UserInfoByNicknameRes> userInfoByNicknameResList = new ArrayList<>();
+            userInfoByNicknameResList.add(byNickname);
+            userInfoByNicknameResList.add(myInfoByNickname);
+
+            ApiResponse apiResponse = ApiResponse.builder()
+                    .check(true)
+                    .information(userInfoByNicknameResList)
+                    .build();
+            return ResponseEntity.ok(apiResponse);
+        }
+
+        UserInfoByNicknameRes byNickname = userRepository.findByNickname(nickname);
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(byNickname)
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
 }
