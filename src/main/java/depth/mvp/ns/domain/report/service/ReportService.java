@@ -3,6 +3,8 @@ package depth.mvp.ns.domain.report.service;
 import com.querydsl.core.Tuple;
 import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
+import depth.mvp.ns.domain.point.domain.Point;
+import depth.mvp.ns.domain.point.domain.repository.PointRepository;
 import depth.mvp.ns.domain.report.domain.Report;
 import depth.mvp.ns.domain.report.domain.WordCount;
 import depth.mvp.ns.domain.report.domain.repository.ReportRepository;
@@ -16,6 +18,7 @@ import depth.mvp.ns.domain.s3.service.S3Uploader;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
 import depth.mvp.ns.domain.user.domain.User;
+import depth.mvp.ns.domain.user.domain.repository.UserRepository;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.payload.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
@@ -53,6 +56,8 @@ public class ReportService {
     private final ReportDetailRepository reportDetailRepository;
     private final CloudImageGenerator cloudImageGenerator;
     private final S3Uploader s3Uploader;
+    private final UserRepository userRepository;
+    private final PointRepository pointRepository;
 
 
     public ResponseEntity<?> findReport(CustomUserDetails customUserDetails, LocalDate parsedDate) {
@@ -218,7 +223,7 @@ public class ReportService {
                 .build();
 
 
-        // WordCount 객체 저장 -> 불필요 시 추후 삭제 할 수 있음.
+        // WordCount 객체 저장
         wordCount.forEach((word, count) -> {
             WordCount wordCountEntity = WordCount.builder()
                     .word(word)
@@ -258,6 +263,26 @@ public class ReportService {
 
         // 가장 좋아요 많이 받은 top3 게시글 저장
         List<Board> top3BoardWithMostLiked = boardRepository.findTop3BoardWithMostLiked();
+
+        // 베스트 게시글 선정 포인트 각 +5점
+        top3BoardWithMostLiked.stream().map(
+                board -> {
+                    Long userId = board.getUser().getId();
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(EntityNotFoundException::new);
+
+                    user.addPoint(5);
+
+                    Point point = Point.builder()
+                            .user(user)
+                            .score(5)
+                            .build();
+
+                    pointRepository.save(point);
+                    return board;
+                }
+        ).collect(Collectors.toList());
+
         top3BoardWithMostLiked.forEach(board -> {
             // ReportDetail 엔티티에 topLikedBoard 정보 저장
             ReportDetail reportDetail = ReportDetail.builder()
