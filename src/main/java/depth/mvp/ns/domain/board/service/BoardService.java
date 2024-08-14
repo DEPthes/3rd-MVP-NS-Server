@@ -6,12 +6,11 @@ import depth.mvp.ns.domain.board.dto.request.PublishReq;
 import depth.mvp.ns.domain.board.dto.request.SaveDraftReq;
 import depth.mvp.ns.domain.board.dto.request.UpdateReq;
 import depth.mvp.ns.domain.board.dto.response.BoardLikeRes;
-import depth.mvp.ns.domain.board.dto.response.ThemeLikeRes;
 import depth.mvp.ns.domain.board_like.domain.BoardLike;
 import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
 import depth.mvp.ns.domain.common.Status;
-import depth.mvp.ns.domain.point.domain.Point;
-import depth.mvp.ns.domain.point.domain.repository.PointRepository;
+import depth.mvp.ns.domain.user_point.domain.UserPoint;
+import depth.mvp.ns.domain.user_point.domain.repository.UserPointRepository;
 import depth.mvp.ns.domain.board.dto.response.BoardDetailRes;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
@@ -24,13 +23,11 @@ import depth.mvp.ns.global.payload.ApiResponse;
 import depth.mvp.ns.global.payload.DefaultAssert;
 import depth.mvp.ns.global.payload.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -41,7 +38,7 @@ public class BoardService {
     private final BoardLikeRepository boardLikeRepository;
     private final UserRepository userRepository;
     private final ThemeRepository themeRepository;
-    private final PointRepository pointRepository;
+    private final UserPointRepository userPointRepository;
     private final ThemeLikeRepository themeLikeRepository;
 
     @Transactional
@@ -255,20 +252,20 @@ public class BoardService {
     }
 
     private void savePointHistory(User user, int score) {
-        Point point = Point.builder()
+        UserPoint userPoint = UserPoint.builder()
                 .user(user)
                 .score(score)
                 .build();
-        pointRepository.save(point);
+        userPointRepository.save(userPoint);
     }
 
     private void deletePointHistory(User user, LocalDate date, int score) {
         // 부여된 날짜 및 score로 point 찾기
-        Optional<Point> pointOptional = pointRepository.findByUserAndCreatedDateAndScore(user, date, score);
+        Optional<UserPoint> pointOptional = userPointRepository.findByUserAndCreatedDateAndScore(user, date, score);
         DefaultAssert.isTrue(pointOptional.isPresent(), "포인트 내역이 존재하지 않습니다.");
-        Point point = pointOptional.get();
+        UserPoint userPoint = pointOptional.get();
 
-        pointRepository.delete(point);
+        userPointRepository.delete(userPoint);
     }
 
     // 게시글 조회

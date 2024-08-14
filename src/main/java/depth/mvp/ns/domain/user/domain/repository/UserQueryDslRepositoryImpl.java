@@ -2,7 +2,6 @@ package depth.mvp.ns.domain.user.domain.repository;
 
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import depth.mvp.ns.domain.point.domain.QPoint;
 import depth.mvp.ns.domain.user.domain.RankingType;
 import depth.mvp.ns.domain.user.dto.response.*;
 import lombok.RequiredArgsConstructor;
@@ -11,12 +10,11 @@ import org.springframework.stereotype.Repository;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import static depth.mvp.ns.domain.point.domain.QPoint.point;
+import static depth.mvp.ns.domain.user_point.domain.QUserPoint.userPoint;
 import static depth.mvp.ns.domain.user.domain.QUser.user;
 
 @RequiredArgsConstructor
@@ -80,15 +78,15 @@ public class UserQueryDslRepositoryImpl implements UserQueryDslRepository {
                         user.id,
                         user.nickname,
                         user.imageUrl,
-                        point.score.sum(),
+                        userPoint.score.sum(),
                         id != null ? user.id.eq(id) : Expressions.asBoolean(false)
                 ))
-                .from(point)
+                .from(userPoint)
                 .leftJoin(user)
-                .on(point.user.id.eq(user.id))
-                .where(point.createdDate.between(startDate, endDate))
+                .on(userPoint.user.id.eq(user.id))
+                .where(userPoint.createdDate.between(startDate, endDate))
                 .groupBy(user.id, user.nickname, user.imageUrl)
-                .orderBy(point.score.sum().desc())
+                .orderBy(userPoint.score.sum().desc())
                 .limit(3)
                 .fetch();
 
@@ -97,15 +95,15 @@ public class UserQueryDslRepositoryImpl implements UserQueryDslRepository {
                         Expressions.constant(0L), // 랭킹
                         user.id,
                         user.nickname,
-                        point.score.sum(),
+                        userPoint.score.sum(),
                         id != null ? user.id.eq(id) : Expressions.asBoolean(false)
                 ))
-                .from(point)
+                .from(userPoint)
                 .leftJoin(user)
-                .on(point.user.id.eq(user.id))
-                .where(point.createdDate.between(startDate, endDate))
+                .on(userPoint.user.id.eq(user.id))
+                .where(userPoint.createdDate.between(startDate, endDate))
                 .groupBy(user.id, user.nickname)
-                .orderBy(point.score.sum().desc())
+                .orderBy(userPoint.score.sum().desc())
                 .limit(10)
                 .fetch();
 
@@ -132,7 +130,7 @@ public class UserQueryDslRepositoryImpl implements UserQueryDslRepository {
                             Expressions.constant(0L),
                             user.id,
                             user.nickname,
-                            point.score.sum(),
+                            userPoint.score.sum(),
                             user.id.eq(id)
                     ))
                     .from(user)

@@ -1,4 +1,4 @@
-package depth.mvp.ns.domain.point.domain;
+package depth.mvp.ns.domain.user_point.domain;
 
 import depth.mvp.ns.domain.common.BaseEntity;
 import depth.mvp.ns.domain.user.domain.User;
@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Point extends BaseEntity {
+public class UserPoint extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "point_id")
+    @Column(name = "user_point_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,7 +25,7 @@ public class Point extends BaseEntity {
     private int score;
 
     @Builder
-    public Point(User user, int score) {
+    public UserPoint(User user, int score) {
         this.user = user;
         this.score = score;
     }
