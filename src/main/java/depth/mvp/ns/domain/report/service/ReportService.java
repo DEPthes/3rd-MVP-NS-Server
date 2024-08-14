@@ -3,8 +3,8 @@ package depth.mvp.ns.domain.report.service;
 import com.querydsl.core.Tuple;
 import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
-import depth.mvp.ns.domain.point.domain.Point;
-import depth.mvp.ns.domain.point.domain.repository.PointRepository;
+import depth.mvp.ns.domain.user_point.domain.UserPoint;
+import depth.mvp.ns.domain.user_point.domain.repository.UserPointRepository;
 import depth.mvp.ns.domain.report.domain.Report;
 import depth.mvp.ns.domain.report.domain.WordCount;
 import depth.mvp.ns.domain.report.domain.repository.ReportRepository;
@@ -26,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 import org.openkoreantext.processor.KoreanTokenJava;
 import org.openkoreantext.processor.OpenKoreanTextProcessorJava;
 import org.openkoreantext.processor.tokenizer.KoreanTokenizer;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +56,7 @@ public class ReportService {
     private final CloudImageGenerator cloudImageGenerator;
     private final S3Uploader s3Uploader;
     private final UserRepository userRepository;
-    private final PointRepository pointRepository;
+    private final UserPointRepository userPointRepository;
 
 
     public ResponseEntity<?> findReport(CustomUserDetails customUserDetails, LocalDate parsedDate) {
@@ -273,12 +272,12 @@ public class ReportService {
 
                     user.addPoint(5);
 
-                    Point point = Point.builder()
+                    UserPoint userPoint = UserPoint.builder()
                             .user(user)
                             .score(5)
                             .build();
 
-                    pointRepository.save(point);
+                    userPointRepository.save(userPoint);
                     return board;
                 }
         ).collect(Collectors.toList());

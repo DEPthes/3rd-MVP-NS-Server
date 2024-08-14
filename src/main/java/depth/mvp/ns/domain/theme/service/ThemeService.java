@@ -3,8 +3,8 @@ package depth.mvp.ns.domain.theme.service;
 import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.common.Status;
-import depth.mvp.ns.domain.point.domain.Point;
-import depth.mvp.ns.domain.point.domain.repository.PointRepository;
+import depth.mvp.ns.domain.user_point.domain.UserPoint;
+import depth.mvp.ns.domain.user_point.domain.repository.UserPointRepository;
 import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
 import depth.mvp.ns.domain.theme.dto.response.ThemeDetailRes;
@@ -44,7 +44,7 @@ public class ThemeService {
     private final ThemeLikeRepository themeLikeRepository;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
-    private final PointRepository pointRepository;
+    private final UserPointRepository userPointRepository;
 
     // 오늘의 주제 조회
     public ResponseEntity<?> getTodayTheme(@CurrentUser CustomUserDetails customUserDetails) {
@@ -261,20 +261,20 @@ public class ThemeService {
     }
 
     private void savePointHistory(User user, int score) {
-        Point point = Point.builder()
+        UserPoint userPoint = UserPoint.builder()
                 .user(user)
                 .score(score)
                 .build();
-        pointRepository.save(point);
+        userPointRepository.save(userPoint);
     }
 
     private void deletePointHistory(User user, LocalDate date, int score) {
         // 부여된 날짜 및 score로 point 찾기
-        Optional<Point> pointOptional = pointRepository.findByUserAndCreatedDateAndScore(user, date, score);
+        Optional<UserPoint> pointOptional = userPointRepository.findByUserAndCreatedDateAndScore(user, date, score);
         DefaultAssert.isTrue(pointOptional.isPresent(), "포인트 내역이 존재하지 않습니다.");
-        Point point = pointOptional.get();
+        UserPoint userPoint = pointOptional.get();
 
-        pointRepository.delete(point);
+        userPointRepository.delete(userPoint);
     }
 
 }
