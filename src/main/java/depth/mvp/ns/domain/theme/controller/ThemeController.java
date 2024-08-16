@@ -36,9 +36,9 @@ public class ThemeController {
     @GetMapping("/search")
     public ResponseEntity<?> searchTheme(
             @RequestParam String keyword,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "3") int size){
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
         return themeService.searchTheme(keyword, pageable);
     }
 
@@ -47,10 +47,10 @@ public class ThemeController {
     public ResponseEntity<?> getThemeDetail(
             @CurrentUser CustomUserDetails customUserDetails,
             @PathVariable Long themeId,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "2") int size,
             @RequestParam(defaultValue = "date") String sortBy) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
         return themeService.getThemeDetail(themeId, sortBy, pageable, customUserDetails);
     }
 }
