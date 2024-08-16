@@ -255,7 +255,7 @@ public class ThemeService {
                 }).collect(Collectors.toList());
 
         PageInfo pageInfo = PageInfo.builder()
-                .pageNumber(themePage.getNumber())
+                .pageNumber(themePage.getNumber() + 1) //페이지 번호 1부터 시작
                 .pageSize(themePage.getSize())
                 .totalElements(themePage.getTotalElements())
                 .totalPages(themePage.getTotalPages())

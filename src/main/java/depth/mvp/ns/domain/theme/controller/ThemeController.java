@@ -26,10 +26,10 @@ public class ThemeController {
 
     @GetMapping("/list")
     public ResponseEntity<?> getThemeList(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "3") int size,
             @RequestParam(defaultValue = "date") String sortBy) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
         return themeService.getThemeList(pageable, sortBy);
     }
 
