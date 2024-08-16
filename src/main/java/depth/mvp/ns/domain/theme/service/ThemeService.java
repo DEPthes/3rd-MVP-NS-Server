@@ -191,7 +191,16 @@ public class ThemeService {
             likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
         }
 
+        // 페이지 정보 생성
+        PageInfo pageInfo = PageInfo.builder()
+                .pageNumber(boardPage.getNumber() + 1) //페이지 번호 1부터 시작
+                .pageSize(boardPage.getSize())
+                .totalElements(boardPage.getTotalElements())
+                .totalPages(boardPage.getTotalPages())
+                .build();
+
         ThemeDetailRes themeDetailRes = ThemeDetailRes.builder()
+                .pageInfo(pageInfo)
                 .userId(userId)
                 .likedTheme(likedTheme)
                 .content(theme.getContent())

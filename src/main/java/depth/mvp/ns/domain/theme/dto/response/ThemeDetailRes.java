@@ -1,5 +1,6 @@
 package depth.mvp.ns.domain.theme.dto.response;
 
+import depth.mvp.ns.global.payload.PageInfo;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Getter
 public class ThemeDetailRes {
+    private PageInfo pageInfo; // 페이지 정보
     private  Long userId; // 사용자ID
     private  boolean likedTheme; // 주제 좋아요 여부
     private String content; // 주제 내용
@@ -18,7 +20,8 @@ public class ThemeDetailRes {
     private List<BoardRes> boards; // 게시글 목록
 
     @Builder
-    public ThemeDetailRes(Long userId, boolean likedTheme, String content, LocalDate date, int likeCount, List<BoardRes> boards){
+    public ThemeDetailRes(PageInfo pageInfo, Long userId, boolean likedTheme, String content, LocalDate date, int likeCount, List<BoardRes> boards){
+        this.pageInfo = pageInfo;
         this.userId = userId;
         this.likedTheme = likedTheme;
         this.content = content;
