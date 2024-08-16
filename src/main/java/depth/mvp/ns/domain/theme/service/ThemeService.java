@@ -2,6 +2,7 @@ package depth.mvp.ns.domain.theme.service;
 
 import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
+import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
 import depth.mvp.ns.domain.common.Status;
 import depth.mvp.ns.domain.user.dto.response.PageRes;
 import depth.mvp.ns.domain.user_point.domain.UserPoint;
@@ -34,9 +35,8 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +46,7 @@ public class ThemeService {
     private final ThemeLikeRepository themeLikeRepository;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
+    private final BoardLikeRepository boardLikeRepository;
     private final UserPointRepository userPointRepository;
 
     // 오늘의 주제 조회
@@ -166,10 +167,27 @@ public class ThemeService {
                 throw new InvalidParameterException(errors);
         }
 
+        // 회원인지 여부에 따른 처리
+        Long userId = null;
+        boolean likedTheme = false; // 주제 좋아요 여부
+        Set<Long> likedBoardIds = Collections.emptySet(); // 사용자가 좋아요한 게시물 ID 목록
+
+        // 주제에 대한 좋아요 여부 확인하고 응답값 넘겨주기
+        if(customUserDetails != null){
+            User user = validateUser(customUserDetails.getId());
+            userId = user.getId();
+            likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
+            likedBoardIds = boardLikeRepository.findLikedBoardIdsByUserId(userId, Status.ACTIVE);
+        }
+
+        // set->list 변경
+        List<Long> likedBoardIdList = new ArrayList<>(likedBoardIds);
+
+        // 게시물 응답 목록
         List<ThemeDetailRes.BoardRes> boardResList = boardPage.getContent().stream()
                 .map(board -> {
                     int likeCount = boardRepository.countLikesByBoardId(board.getId()); // 게시글 좋아요 수 계산
-
+                    boolean likedBoard = likedBoardIdList.contains(board.getId());
                     return ThemeDetailRes.BoardRes.builder()
                             .boardId(board.getId())
                             .title(board.getTitle())
@@ -177,19 +195,9 @@ public class ThemeService {
                             .nickname(board.getUser().getNickname())
                             .date(board.getCreatedDate())
                             .likeCount(likeCount)
+                            .likedBoard(likedBoard)
                             .build();
                 }).collect(Collectors.toList());
-
-        // 회원인지 여부에 따른 처리
-        Long userId = null;
-        boolean likedTheme = false; // 주제 좋아요 여부
-
-        // 주제에 대한 좋아요 여부 확인하고 응답값 넘겨주기
-        if(customUserDetails != null){
-            User user = validateUser(customUserDetails.getId());
-            userId = user.getId();
-            likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
-        }
 
         // 페이지 정보 생성
         PageInfo pageInfo = PageInfo.builder()

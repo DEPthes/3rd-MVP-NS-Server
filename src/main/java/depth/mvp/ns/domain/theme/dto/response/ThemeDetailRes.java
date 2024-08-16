@@ -38,15 +38,18 @@ public class ThemeDetailRes {
         private String nickname; // 작성자 닉네임
         private String date; // 게시글 작성일
         private int likeCount; // 게시글 좋아요 수
+        private boolean likedBoard; // 게시글 좋아요 여부
 
         @Builder
-        public BoardRes(Long boardId, String title, String content, String nickname, LocalDateTime date, int likeCount){
+        public BoardRes(Long boardId, String title, String content,
+                        String nickname, LocalDateTime date, int likeCount, boolean likedBoard){
             this.boardId = boardId;
             this.title = title;
             this.content = content;
             this.nickname = nickname;
             this.date = date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
             this.likeCount =likeCount;
+            this.likedBoard = likedBoard;
         }
     }
 }
