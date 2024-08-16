@@ -66,6 +66,7 @@ public class ThemeService {
         }
 
         TodayThemeRes todayThemeRes = TodayThemeRes.builder()
+                .themeId(theme.getId())
                 .content(theme.getContent())
                 .userId(userId)
                 .likedTheme(likedTheme)
