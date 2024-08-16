@@ -85,20 +85,24 @@ public class ReportService {
             ReportRes.LongestWriter longestWriter = null;
             if (longestBoardByTheme != null && longestBoardByTheme.getUser() != null) {
                 User user = longestBoardByTheme.getUser();
+                boolean isCurrentUser = customUserDetails != null && customUserDetails.getId().equals(user.getId());
                 longestWriter = new ReportRes.LongestWriter(
                         user.getId(),
+                        isCurrentUser,
                         user.getNickname(),
                         user.getImageUrl(),
                         longestBoardByTheme.getLength()
                 );
             }
 
-            return ResponseEntity.ok(ReportRes.builder()
+            ReportRes reportRes = ReportRes.builder()
                     .selectedDate(parsedDate)
                     .themeName(theme.getContent())
                     .writtenTotal(writtenTotal)
-                    .longestWriter(longestWriter) // longestWriter는 null일 수 있음
-                    .build());
+                    .longestWriter(customUserDetails != null ? longestWriter : null) // 로그인하지 않은 경우 longestWriter 정보를 제공하지 않음
+                    .build();
+
+            return ResponseEntity.ok(reportRes);
         } else {
             // 과거 레포트 조회
 
@@ -162,6 +166,7 @@ public class ReportService {
                     .count(report.getCount())
                     .longestWriter(new ReportRes.LongestWriter(
                             user.getId(),
+                            customUserDetails != null && customUserDetails.getId().equals(user.getId()),
                             user.getNickname(),
                             user.getImageUrl(),
                             longestBoardByTheme.getLength()

@@ -14,6 +14,7 @@ public record ReportRes(
     @Builder
     public static record LongestWriter(
             Long userId,
+            boolean isCurrentUser,
             String nickname,
             String imageUrl,
             int length
