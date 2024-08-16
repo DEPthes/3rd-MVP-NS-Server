@@ -57,6 +57,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // 특정 GET 요청만 인증 없이 접근 가능
                         .requestMatchers(HttpMethod.GET, "/api/v1/board/{boardId}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/theme/**").permitAll()
                         .requestMatchers("/api/v1/board/**").authenticated()
                         .requestMatchers(
                                 antMatcher("/"),
@@ -70,7 +71,6 @@ public class SecurityConfig {
                                 antMatcher("/v3/api-docs/**"),
                                 antMatcher("/auth/**"),
                                 antMatcher("/api/v1/report/**"),
-                                antMatcher("/api/v1/theme/today"),
                                 antMatcher("/api/v1/report/generate"),
                                 antMatcher("/api/v1/user/profile/**"),
                                 antMatcher("/api/v1/user/nickname"),
