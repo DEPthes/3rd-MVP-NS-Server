@@ -126,11 +126,12 @@ public class ThemeService {
             themeLike.updateStatus(Status.DELETE);
             user.addPoint(score);
             // 포인트 내역 삭제
-            deletePointHistory(user, themeLike.getCreatedDate().toLocalDate(), score);
+            deletePointHistory(user, themeLike.getCreatedDate().toLocalDate(), Math.abs(score));
         } else {
+            score = 1;
             // 좋아요 다시 활성화
             themeLike.updateStatus(Status.ACTIVE);
-            user.addPoint(Math.abs(score));
+            user.addPoint(score);
             // 포인트 내역 저장
             savePointHistory(user, score);
         }
