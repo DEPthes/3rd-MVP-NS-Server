@@ -34,6 +34,7 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;
@@ -126,7 +127,7 @@ public class ThemeService {
             themeLike.updateStatus(Status.DELETE);
             user.addPoint(score);
             // 포인트 내역 삭제
-            deletePointHistory(user, themeLike.getCreatedDate().toLocalDate(), Math.abs(score));
+            deletePointHistory(user, themeLike.getModifiedDate().toLocalDate(), Math.abs(score));
         } else {
             score = 1;
             // 좋아요 다시 활성화
@@ -293,10 +294,12 @@ public class ThemeService {
     }
 
     private void deletePointHistory(User user, LocalDate date, int score) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
         // 부여된 날짜 및 score로 point 찾기
-        Optional<UserPoint> pointOptional = userPointRepository.findByUserAndCreatedDateAndScore(user, date, score);
-        DefaultAssert.isTrue(pointOptional.isPresent(), "포인트 내역이 존재하지 않습니다.");
-        UserPoint userPoint = pointOptional.get();
+        List<UserPoint> pointList = userPointRepository.findTop1ByUserAndModifiedDateAndScore(user, startOfDay, endOfDay, score);
+        DefaultAssert.isTrue(!pointList.isEmpty(), "포인트 내역이 존재하지 않습니다.");
+        UserPoint userPoint = pointList.get(0);
 
         userPointRepository.delete(userPoint);
     }
