@@ -3,6 +3,7 @@ package depth.mvp.ns.domain.theme.service;
 import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.common.Status;
+import depth.mvp.ns.domain.user.dto.response.PageRes;
 import depth.mvp.ns.domain.user_point.domain.UserPoint;
 import depth.mvp.ns.domain.user_point.domain.repository.UserPointRepository;
 import depth.mvp.ns.domain.theme.domain.Theme;
@@ -22,6 +23,7 @@ import depth.mvp.ns.global.error.InvalidParameterException;
 import depth.mvp.ns.global.payload.ApiResponse;
 import depth.mvp.ns.global.payload.DefaultAssert;
 import depth.mvp.ns.global.payload.ErrorCode;
+import depth.mvp.ns.global.payload.PageInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -189,7 +191,16 @@ public class ThemeService {
             likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
         }
 
+        // 페이지 정보 생성
+        PageInfo pageInfo = PageInfo.builder()
+                .pageNumber(boardPage.getNumber() + 1) //페이지 번호 1부터 시작
+                .pageSize(boardPage.getSize())
+                .totalElements(boardPage.getTotalElements())
+                .totalPages(boardPage.getTotalPages())
+                .build();
+
         ThemeDetailRes themeDetailRes = ThemeDetailRes.builder()
+                .pageInfo(pageInfo)
                 .userId(userId)
                 .likedTheme(likedTheme)
                 .content(theme.getContent())
@@ -252,9 +263,21 @@ public class ThemeService {
                             .build();
                 }).collect(Collectors.toList());
 
+        PageInfo pageInfo = PageInfo.builder()
+                .pageNumber(themePage.getNumber() + 1) //페이지 번호 1부터 시작
+                .pageSize(themePage.getSize())
+                .totalElements(themePage.getTotalElements())
+                .totalPages(themePage.getTotalPages())
+                .build();
+
+        PageRes<ThemeListRes> pageRes = PageRes.<ThemeListRes>builder()
+                .pageInfo(pageInfo)
+                .resList(themeListRes)
+                .build();
+
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
-                .information(themeListRes)
+                .information(pageRes)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
