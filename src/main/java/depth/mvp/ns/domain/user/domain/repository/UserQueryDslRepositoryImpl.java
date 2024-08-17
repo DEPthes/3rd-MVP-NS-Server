@@ -2,8 +2,10 @@ package depth.mvp.ns.domain.user.domain.repository;
 
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import depth.mvp.ns.domain.user.domain.QUser;
 import depth.mvp.ns.domain.user.domain.RankingType;
 import depth.mvp.ns.domain.user.dto.response.*;
+import depth.mvp.ns.domain.user_point.domain.QUserPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -11,10 +13,10 @@ import org.springframework.stereotype.Repository;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import static depth.mvp.ns.domain.user_point.domain.QUserPoint.userPoint;
 import static depth.mvp.ns.domain.user.domain.QUser.user;
 
 @RequiredArgsConstructor
@@ -57,6 +59,9 @@ public class UserQueryDslRepositoryImpl implements UserQueryDslRepository {
         LocalDateTime startDate;
         LocalDateTime endDate = LocalDateTime.now();
 
+        QUserPoint userPoint = QUserPoint.userPoint;
+        QUser user = QUser.user;
+
         switch (type) {
             case DAILY:
                 startDate = endDate.toLocalDate().atStartOfDay();
@@ -78,7 +83,7 @@ public class UserQueryDslRepositoryImpl implements UserQueryDslRepository {
                         user.id,
                         user.nickname,
                         user.imageUrl,
-                        userPoint.score.sum(),
+                        Expressions.asNumber(userPoint.score.sum()).coalesce(0),
                         id != null ? user.id.eq(id) : Expressions.asBoolean(false)
                 ))
                 .from(userPoint)
@@ -86,13 +91,18 @@ public class UserQueryDslRepositoryImpl implements UserQueryDslRepository {
                 .on(userPoint.user.id.eq(user.id))
                 .where(userPoint.createdDate.between(startDate, endDate))
                 .groupBy(user.id, user.nickname, user.imageUrl)
-                .orderBy(userPoint.score.sum().desc())
+                .orderBy(Expressions.numberTemplate(Integer.class, "COALESCE({0}, {1})", userPoint.score.sum(), 0).desc())
                 .limit(3)
                 .fetch();
 
+
+        AtomicBoolean isUserIncluded = new AtomicBoolean(false);
+        AtomicLong ranking = new AtomicLong(1);
+
+        // optionRankingUsers 리스트를 가져옵니다.
         List<UserRankingRes.OptionRankingRes> optionRankingUsers = queryFactory
                 .select(new QUserRankingRes_OptionRankingRes(
-                        Expressions.constant(0L), // 랭킹
+                        Expressions.constant(0L), // 초기 랭킹
                         user.id,
                         user.nickname,
                         userPoint.score.sum(),
@@ -104,46 +114,51 @@ public class UserQueryDslRepositoryImpl implements UserQueryDslRepository {
                 .where(userPoint.createdDate.between(startDate, endDate))
                 .groupBy(user.id, user.nickname)
                 .orderBy(userPoint.score.sum().desc())
-                .limit(10)
-                .fetch();
-
-
-        AtomicLong ranking = new AtomicLong(1);
-        optionRankingUsers = optionRankingUsers.stream()
-                .map(optionRankingUser -> new UserRankingRes.OptionRankingRes(
-                        ranking.getAndIncrement(),
-                        optionRankingUser.userId(),
-                        optionRankingUser.nickname(),
-                        optionRankingUser.point(),
-                        optionRankingUser.isCurrentUser()
-                ))
+                .fetch()
+                .stream()
+                .map(optionRankingUser -> {
+                    boolean isCurrentUser = optionRankingUser.userId().equals(id);
+                    if (isCurrentUser) {
+                        isUserIncluded.set(true);
+                    }
+                    return new UserRankingRes.OptionRankingRes(
+                            ranking.getAndIncrement(),
+                            optionRankingUser.userId(),
+                            optionRankingUser.nickname(),
+                            optionRankingUser.point(),
+                            isCurrentUser
+                    );
+                })
                 .collect(Collectors.toList());
 
-        optionRankingUsers = optionRankingUsers.stream()
-                .filter(optionRankingUser -> !optionRankingUser.isCurrentUser())
-                .limit(9)
-                .collect(Collectors.toList());
-
-        if (id != null) {
+        // 현재 사용자가 포함되지 않았을 때 랭킹을 추가합니다.
+        if (id != null && !isUserIncluded.get()) {
             UserRankingRes.OptionRankingRes userRanking = queryFactory
                     .select(new QUserRankingRes_OptionRankingRes(
-                            Expressions.constant(0L),
+                            Expressions.constant(ranking.get()), // 랭킹 설정
                             user.id,
                             user.nickname,
                             userPoint.score.sum(),
-                            user.id.eq(id)
+                            Expressions.asBoolean(true) // 현재 사용자임을 명확히 표시
                     ))
-                    .from(user)
+                    .from(userPoint)
+                    .leftJoin(user)
+                    .on(userPoint.user.id.eq(user.id))
                     .where(user.id.eq(id))
+                    .groupBy(user.id, user.nickname)
                     .fetchOne();
 
-            optionRankingUsers.add(0, userRanking);
+            // 현재 사용자를 추가
+            if (userRanking != null) {
+                optionRankingUsers.add(userRanking);
+            }
         }
 
         return UserRankingRes.builder()
                 .top3UserRes(top3Users)
                 .optionRankingRes(optionRankingUsers)
                 .build();
+
 
     }
 }
