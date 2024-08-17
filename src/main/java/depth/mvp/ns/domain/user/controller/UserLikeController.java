@@ -21,33 +21,37 @@ public class UserLikeController {
     public ResponseEntity<?> findLikedBoardsByUser(
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "currentLike") String sortBy) {   // date, like, currentLike
-        return userLikeService.getLikedBoardsByUser(customUserDetails, page, sortBy);
+        return userLikeService.getLikedBoardsByUser(customUserDetails, page, size, sortBy);
     }
 
     @GetMapping("/board/search")
     public ResponseEntity<?> searchLikedBoardsByUser(
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size,
             @RequestParam String keyword,
             @RequestParam(defaultValue = "currentLike") String sortBy) {
-        return userLikeService.searchLikedBoardsByUser(customUserDetails, page, keyword, sortBy);
+        return userLikeService.searchLikedBoardsByUser(customUserDetails, page, size, keyword, sortBy);
     }
 
     @GetMapping("/theme")
     public ResponseEntity<?> findLikedThemesByUser(
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "currentLike") String sortBy) {   // date, like, currentLike, board
-        return userLikeService.getLikedThemesByUser(customUserDetails, page, sortBy);
+        return userLikeService.getLikedThemesByUser(customUserDetails, page, size, sortBy);
     }
 
     @GetMapping("/theme/search")
     public ResponseEntity<?> searchLikedThemesByUser(
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size,
             @RequestParam String keyword,
             @RequestParam(defaultValue = "currentLike") String sortBy) {
-        return userLikeService.searchLikedThemesByUser(customUserDetails, page, keyword, sortBy);
+        return userLikeService.searchLikedThemesByUser(customUserDetails, page, size, keyword, sortBy);
     }
 }

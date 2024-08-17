@@ -81,19 +81,21 @@ public class UserController {
     public ResponseEntity<?> findMyBoards(
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "false") boolean filterDrafts,
             @RequestParam(defaultValue = "date") String sortBy) {   // date, like
-        return userLikeService.getMyBoards(customUserDetails, page, filterDrafts, sortBy);
+        return userLikeService.getMyBoards(customUserDetails, page, size, filterDrafts, sortBy);
     }
 
     @GetMapping("/board/search")
     public ResponseEntity<?> searchMyBoards(
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "false") boolean filterDrafts,
             @RequestParam String keyword,
             @RequestParam(defaultValue = "date") String sortBy) {
-        return userLikeService.searchMyBoards(customUserDetails, page, keyword, filterDrafts, sortBy);
+        return userLikeService.searchMyBoards(customUserDetails, page, size, keyword, filterDrafts, sortBy);
     }
 
 }

@@ -28,7 +28,7 @@ public class ThemeController {
     public ResponseEntity<?> getThemeList(
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "3") int size,
+            @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "date") String sortBy) {
         Pageable pageable = PageRequest.of(page - 1, size);
         return themeService.getThemeList(customUserDetails, pageable, sortBy);
@@ -39,7 +39,7 @@ public class ThemeController {
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam String keyword,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "3") int size){
+            @RequestParam(defaultValue = "5") int size){
         Pageable pageable = PageRequest.of(page - 1, size);
         return themeService.searchTheme(customUserDetails, keyword, pageable);
     }
@@ -50,7 +50,7 @@ public class ThemeController {
             @CurrentUser CustomUserDetails customUserDetails,
             @PathVariable Long themeId,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "2") int size,
+            @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "date") String sortBy) {
         Pageable pageable = PageRequest.of(page - 1, size);
         return themeService.getThemeDetail(themeId, sortBy, pageable, customUserDetails);
