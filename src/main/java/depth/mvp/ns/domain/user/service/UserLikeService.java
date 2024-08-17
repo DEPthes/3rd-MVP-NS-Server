@@ -46,7 +46,7 @@ public class UserLikeService {
 
     // Description: 좋아요를 누른 게시글
     // 좋아요 누른 글 조회 + 정렬
-    public ResponseEntity<?> getLikedBoardsByUser(CustomUserDetails customUserDetails, int page, String sortBy) {
+    public ResponseEntity<?> getLikedBoardsByUser(CustomUserDetails customUserDetails, int page, int size, String sortBy) {
         User user = validUserById(customUserDetails.getId());
 
         List<BoardLikeByUserRes> boardLikeByUserResList;
@@ -57,13 +57,13 @@ public class UserLikeService {
             // date, like 정렬 적용
             sortBoardLikes(boardLikeByUserResList, sortBy);
             // 페이징 적용
-            boardLikeByUserResList = applyPagination(boardLikeByUserResList, page, 3);
+            boardLikeByUserResList = applyPagination(boardLikeByUserResList, page, size);
         } else {
             // currentLike 기준 정렬 및 페이징
-            boardLikeByUserResList = sortBoardByCurrentLike(user, page, null);
+            boardLikeByUserResList = sortBoardByCurrentLike(user, page, size, null);
         }
 
-        PageInfo pageInfo = createPageInfo(allBoardLikes.size(), page, 3);
+        PageInfo pageInfo = createPageInfo(allBoardLikes.size(), page, size);
         PageRes<BoardLikeByUserRes> pageBoardLikeRes = PageRes.<BoardLikeByUserRes>builder()
                 .pageInfo(pageInfo)
                 .resList(boardLikeByUserResList)
@@ -104,8 +104,8 @@ public class UserLikeService {
     }
 
     // currentLike 기준으로 정렬 및 페이징
-    private List<BoardLikeByUserRes> sortBoardByCurrentLike(User user, int page, String keyword) {
-        Pageable pageable = PageRequest.of(page - 1, 3, Sort.by(Sort.Direction.DESC, "createdDate"));
+    private List<BoardLikeByUserRes> sortBoardByCurrentLike(User user, int page, int size, String keyword) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdDate"));
         Page<BoardLike> boardLikePage;
         // 조회, 검색 동일한 메소드 사용하므로 keyword 유무로 구분
         if (keyword == null) {
@@ -149,7 +149,7 @@ public class UserLikeService {
     }
 
     // 검색
-    public ResponseEntity<?> searchLikedBoardsByUser(CustomUserDetails customUserDetails, int page, String keyword, String sortBy) {
+    public ResponseEntity<?> searchLikedBoardsByUser(CustomUserDetails customUserDetails, int page, int size, String keyword, String sortBy) {
         User user = validUserById(customUserDetails.getId());
         List<BoardLikeByUserRes> boardLikeByUserResList;
         List<BoardLike> allBoardLikes =  boardLikeRepository.findByUserAndStatusAndBoardFieldsContaining(
@@ -161,13 +161,13 @@ public class UserLikeService {
             // date, like 정렬 적용
             sortBoardLikes(boardLikeByUserResList, sortBy);
             // 페이징 적용
-            boardLikeByUserResList = applyPagination(boardLikeByUserResList, page, 3);
+            boardLikeByUserResList = applyPagination(boardLikeByUserResList, page, size);
         } else {
             // currentLike 기준 정렬 및 페이징
-            boardLikeByUserResList = sortBoardByCurrentLike(user, page, keyword);
+            boardLikeByUserResList = sortBoardByCurrentLike(user, page, size, keyword);
         }
 
-        PageInfo pageInfo = createPageInfo(allBoardLikes.size(), page, 3);
+        PageInfo pageInfo = createPageInfo(allBoardLikes.size(), page, size);
         PageRes<BoardLikeByUserRes> pageBoardLikeRes = PageRes.<BoardLikeByUserRes>builder()
                 .pageInfo(pageInfo)
                 .resList(boardLikeByUserResList)
@@ -182,7 +182,7 @@ public class UserLikeService {
 
     // Description: 좋아요를 누른 주제
     // 주제 조회
-    public ResponseEntity<?> getLikedThemesByUser(CustomUserDetails customUserDetails, int page, String sortBy) {
+    public ResponseEntity<?> getLikedThemesByUser(CustomUserDetails customUserDetails, int page, int size, String sortBy) {
         // date, like, currentLike, board
         User user = validUserById(customUserDetails.getId());
 
@@ -194,13 +194,13 @@ public class UserLikeService {
             // date, like, board 정렬 적용
             sortThemeLikes(themeLikeByUserResList, sortBy);
             // 페이징 적용
-            themeLikeByUserResList = applyPagination(themeLikeByUserResList, page, 3);
+            themeLikeByUserResList = applyPagination(themeLikeByUserResList, page, size);
         } else {
             // currentLike 기준 정렬 및 페이징
-            themeLikeByUserResList = sortThemeByCurrentLike(user, page, null);
+            themeLikeByUserResList = sortThemeByCurrentLike(user, page, size, null);
         }
 
-        PageInfo pageInfo = createPageInfo(allThemeLikes.size(), page, 3);
+        PageInfo pageInfo = createPageInfo(allThemeLikes.size(), page, size);
         PageRes<ThemeLikeByUserRes> pageThemeLikeRes = PageRes.<ThemeLikeByUserRes>builder()
                 .pageInfo(pageInfo)
                 .resList(themeLikeByUserResList)
@@ -244,8 +244,8 @@ public class UserLikeService {
     }
 
     // currentLike 기준으로 정렬 및 페이징
-    private List<ThemeLikeByUserRes> sortThemeByCurrentLike(User user, int page, String keyword) {
-        Pageable pageable = PageRequest.of(page - 1, 3, Sort.by(Sort.Direction.DESC, "createdDate"));
+    private List<ThemeLikeByUserRes> sortThemeByCurrentLike(User user, int page, int size, String keyword) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdDate"));
         Page<ThemeLike> themeLikePage;
 
         if (keyword == null) {
@@ -272,7 +272,7 @@ public class UserLikeService {
     }
 
     // 주제 검색
-    public ResponseEntity<?> searchLikedThemesByUser(CustomUserDetails customUserDetails, int page, String keyword, String sortBy) {
+    public ResponseEntity<?> searchLikedThemesByUser(CustomUserDetails customUserDetails, int page, int size, String keyword, String sortBy) {
         User user = validUserById(customUserDetails.getId());
         List<ThemeLikeByUserRes> themeLikeByUserResList;
         List<ThemeLike> allThemeLikes =  themeLikeRepository.findByUserAndStatusAndThemeFieldsContaining(
@@ -284,13 +284,13 @@ public class UserLikeService {
             // date, like, board 정렬 적용
             sortThemeLikes(themeLikeByUserResList, sortBy);
             // 페이징 적용
-            themeLikeByUserResList = applyPagination(themeLikeByUserResList, page, 3);
+            themeLikeByUserResList = applyPagination(themeLikeByUserResList, page, size);
         } else {
             // currentLike 기준 정렬 및 페이징
-            themeLikeByUserResList = sortThemeByCurrentLike(user, page, keyword);
+            themeLikeByUserResList = sortThemeByCurrentLike(user, page, size, keyword);
         }
 
-        PageInfo pageInfo = createPageInfo(allThemeLikes.size(), page, 3);
+        PageInfo pageInfo = createPageInfo(allThemeLikes.size(), page, size);
         PageRes<ThemeLikeByUserRes> pageThemeLikeRes = PageRes.<ThemeLikeByUserRes>builder()
                 .pageInfo(pageInfo)
                 .resList(themeLikeByUserResList)
@@ -304,7 +304,7 @@ public class UserLikeService {
     }
 
     // 내 글
-    public ResponseEntity<?> getMyBoards(CustomUserDetails customUserDetails, int page, boolean filterDrafts, String sortBy) {
+    public ResponseEntity<?> getMyBoards(CustomUserDetails customUserDetails, int page, int size, boolean filterDrafts, String sortBy) {
         // 최신순, 좋아요 순
         User user = validUserById(customUserDetails.getId());
         // 임시저장 제외 여부에 따라 totalElements 달라짐
@@ -320,18 +320,18 @@ public class UserLikeService {
         List<MyBoardRes> myBoardResList;
         switch (sortBy) {
             case "date":
-                myBoardResList = sortByDate(user, page, filterDrafts, null);
+                myBoardResList = sortByDate(user, page, size, filterDrafts, null);
                 break;
             case "like":
                 myBoardResList = sortByLike(user, filterDrafts, null);
                 myBoardResList.sort(Comparator.comparing(MyBoardRes::getCountLike, Comparator.reverseOrder()));
-                myBoardResList = applyPagination(myBoardResList, page, 3);
+                myBoardResList = applyPagination(myBoardResList, page, size);
                 break;
             default:
                 throw new InvalidParameterException("잘못된 요청 파라미터입니다.");
         }
 
-        PageInfo pageInfo = createPageInfo(allMyBoards.size(), page, 3);
+        PageInfo pageInfo = createPageInfo(allMyBoards.size(), page, size);
         PageRes<MyBoardRes> pageMyBoardRes = PageRes.<MyBoardRes>builder()
                 .pageInfo(pageInfo)
                 .resList(myBoardResList)
@@ -344,7 +344,7 @@ public class UserLikeService {
         return ResponseEntity.ok(apiResponse);
     }
 
-    public ResponseEntity<?> searchMyBoards(CustomUserDetails customUserDetails, int page, String keyword, boolean filterDrafts, String sortBy) {
+    public ResponseEntity<?> searchMyBoards(CustomUserDetails customUserDetails, int page, int size, String keyword, boolean filterDrafts, String sortBy) {
         // 최신순, 좋아요 순
         User user = validUserById(customUserDetails.getId());
 
@@ -360,18 +360,18 @@ public class UserLikeService {
         List<MyBoardRes> myBoardResList;
         switch (sortBy) {
             case "date":
-                myBoardResList = sortByDate(user, page, filterDrafts, keyword);
+                myBoardResList = sortByDate(user, page, size, filterDrafts, keyword);
                 break;
             case "like":
                 myBoardResList = sortByLike(user, filterDrafts, keyword);
                 myBoardResList.sort(Comparator.comparing(MyBoardRes::getCountLike, Comparator.reverseOrder()));
-                myBoardResList = applyPagination(myBoardResList, page, 3);
+                myBoardResList = applyPagination(myBoardResList, page, size);
                 break;
             default:
                 throw new InvalidParameterException("잘못된 요청 파라미터입니다.");
         }
 
-        PageInfo pageInfo = createPageInfo(allMyBoards.size(), page, 3);
+        PageInfo pageInfo = createPageInfo(allMyBoards.size(), page, size);
         PageRes<MyBoardRes> pageMyBoardRes = PageRes.<MyBoardRes>builder()
                 .pageInfo(pageInfo)
                 .resList(myBoardResList)
@@ -415,8 +415,8 @@ public class UserLikeService {
         }
     }
 
-    private List<MyBoardRes> sortByDate(User user, int page, boolean filterDrafts, String keyword) {
-        Pageable pageable = PageRequest.of(page - 1, 3, Sort.by(Sort.Direction.DESC, "createdDate"));
+    private List<MyBoardRes> sortByDate(User user, int page, int size, boolean filterDrafts, String keyword) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdDate"));
         List<Board> boardList = getFilteredBoards(user, filterDrafts, keyword, pageable);
 
         return boardList.stream()
