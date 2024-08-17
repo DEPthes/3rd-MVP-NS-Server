@@ -26,20 +26,22 @@ public class ThemeController {
 
     @GetMapping("/list")
     public ResponseEntity<?> getThemeList(
+            @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "3") int size,
             @RequestParam(defaultValue = "date") String sortBy) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        return themeService.getThemeList(pageable, sortBy);
+        return themeService.getThemeList(customUserDetails, pageable, sortBy);
     }
 
     @GetMapping("/search")
     public ResponseEntity<?> searchTheme(
+            @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam String keyword,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "3") int size){
         Pageable pageable = PageRequest.of(page - 1, size);
-        return themeService.searchTheme(keyword, pageable);
+        return themeService.searchTheme(customUserDetails, keyword, pageable);
     }
 
 
