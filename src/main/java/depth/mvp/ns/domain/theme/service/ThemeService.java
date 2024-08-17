@@ -228,7 +228,7 @@ public class ThemeService {
     }
 
     // 주제 목록 조회
-    public ResponseEntity<?> getThemeList(Pageable pageable, String sortBy) {
+    public ResponseEntity<?> getThemeList(CustomUserDetails customUserDetails, Pageable pageable, String sortBy) {
         Page<Theme> themePage;
 
         switch (sortBy) {
@@ -247,28 +247,34 @@ public class ThemeService {
                 throw new InvalidParameterException(errors);
         }
 
-        return buildThemeListResponse(themePage);
+        return buildThemeListResponse(themePage, customUserDetails);
     }
 
     // 주제 검색
-    public ResponseEntity<?> searchTheme(String keyword,Pageable pageable) {
+    public ResponseEntity<?> searchTheme(CustomUserDetails customUserDetails, String keyword,Pageable pageable) {
         Page<Theme> themePage = themeRepository.findByContentContaining(keyword, pageable);
-        return buildThemeListResponse(themePage);
+        return buildThemeListResponse(themePage, customUserDetails);
     }
 
     // 주제 목록 처리 & 응답을 반환하는 메소드
-    private ResponseEntity<ApiResponse> buildThemeListResponse(Page<Theme> themePage) {
-        List<ThemeListRes> themeListRes = themePage.getContent().stream()
+    private ResponseEntity<ApiResponse> buildThemeListResponse(Page<Theme> themePage, CustomUserDetails customUserDetails) {
+        final User user = customUserDetails != null ? validateUser(customUserDetails.getId()) : null;
+        final Long userId = user != null ? user.getId() : null;
+
+        List<ThemeListRes.ThemeList> themeList = themePage.getContent().stream()
                 .map(theme -> {
                     int boardCount = themeRepository.countBoardsByThemeId(theme.getId()); // 게시글 수 계산
                     int likeCount = themeRepository.countLikesByThemeId(theme.getId());   // 주제 좋아요 수 계산
+                    // 주제에 대해 사용자가 좋아요를 눌렀는지 확인
+                    boolean likedTheme = user != null && themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
 
-                    return ThemeListRes.builder()
+                    return ThemeListRes.ThemeList.builder()
                             .themeId(theme.getId())
                             .content(theme.getContent())
                             .date(theme.getDate())
                             .likeCount(likeCount)
                             .boardCount(boardCount)
+                            .likedTheme(likedTheme)
                             .build();
                 }).collect(Collectors.toList());
 
@@ -279,14 +285,15 @@ public class ThemeService {
                 .totalPages(themePage.getTotalPages())
                 .build();
 
-        PageRes<ThemeListRes> pageRes = PageRes.<ThemeListRes>builder()
+        ThemeListRes themeListRes = ThemeListRes.builder()
+                .userId(userId)
                 .pageInfo(pageInfo)
-                .resList(themeListRes)
+                .themeList(themeList)
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
-                .information(pageRes)
+                .information(themeListRes)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
