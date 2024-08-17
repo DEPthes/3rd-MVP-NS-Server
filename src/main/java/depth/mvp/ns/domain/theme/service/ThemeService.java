@@ -4,7 +4,6 @@ import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
 import depth.mvp.ns.domain.common.Status;
-import depth.mvp.ns.domain.user.dto.response.PageRes;
 import depth.mvp.ns.domain.user_point.domain.UserPoint;
 import depth.mvp.ns.domain.user_point.domain.repository.UserPointRepository;
 import depth.mvp.ns.domain.theme.domain.Theme;
@@ -36,9 +35,8 @@ import org.springframework.validation.Errors;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
