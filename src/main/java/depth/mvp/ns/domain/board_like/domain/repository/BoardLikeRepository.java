@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface BoardLikeRepository extends JpaRepository<BoardLike, Long> {
@@ -44,4 +45,6 @@ public interface BoardLikeRepository extends JpaRepository<BoardLike, Long> {
             Pageable pageable
     );
 
+    @Query("SELECT b.board.id FROM BoardLike b WHERE b.user.id = :userId AND b.status = :status")
+    Set<Long> findLikedBoardIdsByUserId(@Param("userId") Long userId, @Param("status") Status status);
 }
