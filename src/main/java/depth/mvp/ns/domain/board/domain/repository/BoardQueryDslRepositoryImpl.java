@@ -102,4 +102,31 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
                 boardListResList
         );
     }
+
+    @Override
+    public UserProfileRes findBoardListByUser(User user) {
+
+        List<UserProfileRes.BoardListRes> boardListResList = queryFactory
+                .select(new QUserProfileRes_BoardListRes(
+                        board.id,
+                        board.title,
+                        board.content,
+                        boardLike.id.count()
+                ))
+                .from(board)
+                .leftJoin(boardLike)
+                .on(board.id.eq(boardLike.board.id))
+                .where(board.user.id.eq(user.getId()))
+                .groupBy(board.id, board.title, board.content)
+                .orderBy(board.createdDate.desc())
+                .limit(3)
+                .fetch();
+
+        return new UserProfileRes(
+                user.getId(),
+                user.getNickname(),
+                user.getImageUrl(),
+                boardListResList
+        );
+    }
 }

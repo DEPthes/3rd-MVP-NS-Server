@@ -16,4 +16,6 @@ public interface BoardQueryDslRepository {
     Tuple findMostLikedBoardCountAndTitleWithUserAndTheme(User user, Theme theme);
 
     UserProfileRes findByUserId(Long userId);
+
+    UserProfileRes findBoardListByUser(User user);
 }
