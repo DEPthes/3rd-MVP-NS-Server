@@ -427,6 +427,7 @@ public class UserLikeService {
                         .createdDate(board.getCreatedDate())
                         .countLike(boardLikeRepository.countByBoardAndStatus(board, Status.ACTIVE))
                         .isPublished(board.findIsPublished())
+                        .liked(boardLikeRepository.existsByUserAndBoardAndStatus(user, board, Status.ACTIVE))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -442,6 +443,7 @@ public class UserLikeService {
                         .createdDate(board.getCreatedDate())
                         .countLike(boardLikeRepository.countByBoardAndStatus(board, Status.ACTIVE))
                         .isPublished(board.findIsPublished())
+                        .liked(boardLikeRepository.existsByUserAndBoardAndStatus(user, board, Status.ACTIVE))
                         .build())
                 .collect(Collectors.toList());
     }

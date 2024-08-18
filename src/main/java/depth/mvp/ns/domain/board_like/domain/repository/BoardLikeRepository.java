@@ -47,4 +47,6 @@ public interface BoardLikeRepository extends JpaRepository<BoardLike, Long> {
 
     @Query("SELECT b.board.id FROM BoardLike b WHERE b.user.id = :userId AND b.status = :status")
     Set<Long> findLikedBoardIdsByUserId(@Param("userId") Long userId, @Param("status") Status status);
+
+    boolean existsByUserAndBoardAndStatus(User user, Board board, Status status);
 }
