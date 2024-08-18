@@ -1,5 +1,6 @@
 package depth.mvp.ns.domain.report_detail.domain;
 
+import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.common.BaseEntity;
 import depth.mvp.ns.domain.report.domain.Report;
 import depth.mvp.ns.domain.theme.domain.Theme;
@@ -30,14 +31,19 @@ public class ReportDetail extends BaseEntity {
     @JoinColumn(name = "report_id")
     private Report report;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id")
+    private Board board;
+
     @Enumerated(EnumType.STRING)
     private ReportType reportType;
 
 
     @Builder
-    public ReportDetail(User user, Report report, ReportType reportType) {
+    public ReportDetail(User user, Report report, Board board, ReportType reportType) {
         this.user = user;
         this.report = report;
+        this.board = board;
         this.reportType = reportType;
     }
 }

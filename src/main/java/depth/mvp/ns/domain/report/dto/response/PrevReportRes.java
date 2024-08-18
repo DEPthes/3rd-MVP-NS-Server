@@ -1,5 +1,6 @@
 package depth.mvp.ns.domain.report.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 
 import java.time.LocalDate;
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Builder
 public record PrevReportRes(
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDate selectedDate,
         String themeName,
         int writtenTotal,
@@ -27,6 +29,7 @@ public record PrevReportRes(
             Long likeCount,
             Long bestSelectionCount,
             Long boardId,
+            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
             LocalDateTime boardCreatedAt
     ) {
     }

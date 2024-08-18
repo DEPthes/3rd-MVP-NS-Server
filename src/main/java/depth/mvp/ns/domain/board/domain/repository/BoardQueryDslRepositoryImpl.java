@@ -57,16 +57,38 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
     @Override
     public Tuple findMostLikedBoardCountAndTitleWithUserAndTheme(User user, Theme theme) {
         return queryFactory
-                .select(boardLike.count(), board.title, board.createdDate.max(), board.id)
-                .from(boardLike)
-                .leftJoin(board).on(boardLike.board.id.eq(board.id))
-                .where(board.user.eq(user),
-                        board.theme.eq(theme),
-                        boardLike.status.eq(Status.ACTIVE))
-                .groupBy(board.id, board.title)
-                .orderBy(boardLike.count().desc())
+                .select(
+                        board.id,
+                        board.title,
+                        board.createdDate,
+                        QUser.user.id,
+                        QUser.user.nickname,
+                        QUser.user.imageUrl,
+                        boardLike.id.count().coalesce(0L).as("likeCount")
+                )
+                .from(board)
+                .join(board.user, QUser.user)
+                .leftJoin(boardLike)
+                .on(boardLike.board.eq(board)
+                        .and(boardLike.status.eq(Status.ACTIVE)))
+                .where(
+                        board.user.eq(user),
+                        board.theme.eq(theme)
+                )
+                .groupBy(
+                        board.id,
+                        board.title,
+                        board.createdDate,
+                        QUser.user.id,
+                        QUser.user.nickname,
+                        QUser.user.imageUrl
+                )
+                .orderBy(
+                        boardLike.id.count().coalesce(0L).desc()
+                )
                 .limit(1)
-                .fetchOne();
+                .fetchFirst();
+
     }
 
     @Override
