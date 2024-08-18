@@ -301,6 +301,7 @@ public class BoardService {
                 .likedTheme(likedTheme)
                 .nickname(board.getUser().getNickname())
                 .imageUrl(board.getUser().getImageUrl())
+                .themeId(theme.getId())
                 .themeContent(board.getTheme().getContent())
                 .boardTitle(board.getTitle())
                 .boardContent(board.getContent())
