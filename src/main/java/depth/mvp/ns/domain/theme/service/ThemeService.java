@@ -80,6 +80,36 @@ public class ThemeService {
         return ResponseEntity.ok(apiResponse);
     }
 
+    // 지난 주제 조회
+    public ResponseEntity<?> getPastTheme(@CurrentUser CustomUserDetails customUserDetails, Long themeId) {
+        Theme theme = validateTheme(themeId);
+
+        // 회원인지 여부에 따른 처리
+        Long userId = null;
+        boolean likedTheme = false; // 주제 좋아요 여부
+
+        // 주제에 대한 좋아요 여부 확인하고 응답값 넘겨주기
+        if(customUserDetails != null){
+            User user = validateUser(customUserDetails.getId());
+            userId = user.getId();
+            likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
+        }
+
+        TodayThemeRes pastThemeRes = TodayThemeRes.builder()
+                .themeId(theme.getId())
+                .content(theme.getContent())
+                .userId(userId)
+                .likedTheme(likedTheme)
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(pastThemeRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
     // 주제 좋아요
     @Transactional
     public ResponseEntity<?> hitLikeButton(CustomUserDetails customUserDetails, Long themeId) {

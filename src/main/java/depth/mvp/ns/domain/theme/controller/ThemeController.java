@@ -19,6 +19,11 @@ public class ThemeController {
         return themeService.getTodayTheme(customUserDetails);
     }
 
+    @GetMapping("past/{themeId}")
+    public ResponseEntity<?> getPastTheme(@CurrentUser CustomUserDetails customUserDetails, @PathVariable Long themeId){
+        return themeService.getPastTheme(customUserDetails, themeId);
+    }
+
     @PostMapping("/{themeId}/like")
     public ResponseEntity<?> hitTheThemeLikeButton(@CurrentUser CustomUserDetails customUserDetails, @PathVariable Long themeId) {
         return themeService.hitLikeButton(customUserDetails, themeId);
