@@ -14,16 +14,19 @@ public class ThemeDetailRes {
     private PageInfo pageInfo; // 페이지 정보
     private  Long userId; // 사용자ID
     private  boolean likedTheme; // 주제 좋아요 여부
+    private Long themeId; // 주제ID
     private String content; // 주제 내용
     private String date; // 발행일
     private int likeCount; // 주제 좋아요 수
     private List<BoardRes> boards; // 게시글 목록
 
     @Builder
-    public ThemeDetailRes(PageInfo pageInfo, Long userId, boolean likedTheme, String content, LocalDate date, int likeCount, List<BoardRes> boards){
+    public ThemeDetailRes(PageInfo pageInfo, Long userId, boolean likedTheme, Long themeId,
+                          String content, LocalDate date, int likeCount, List<BoardRes> boards){
         this.pageInfo = pageInfo;
         this.userId = userId;
         this.likedTheme = likedTheme;
+        this.themeId = themeId;
         this.content = content;
         this.date = date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
         this.likeCount = likeCount;
