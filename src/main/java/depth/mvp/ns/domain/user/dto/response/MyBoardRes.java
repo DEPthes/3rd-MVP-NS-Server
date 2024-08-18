@@ -24,13 +24,16 @@ public class MyBoardRes {
 
     private boolean isPublished;
 
+    private boolean liked;
+
     @Builder
-    public MyBoardRes(Long boardId, String theme, String title, int countLike, LocalDateTime createdDate, boolean isPublished) {
+    public MyBoardRes(Long boardId, String theme, String title, int countLike, LocalDateTime createdDate, boolean isPublished, boolean liked) {
         this.boardId = boardId;
         this.theme = theme;
         this.title = title;
         this.countLike = countLike;
         this.createdDate = createdDate;
         this.isPublished = isPublished;
+        this.liked = liked;
     }
 }
