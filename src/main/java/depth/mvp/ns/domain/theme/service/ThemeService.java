@@ -4,6 +4,7 @@ import depth.mvp.ns.domain.board.domain.Board;
 import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
 import depth.mvp.ns.domain.common.Status;
+import depth.mvp.ns.domain.theme.dto.response.ThemeRes;
 import depth.mvp.ns.domain.user_point.domain.UserPoint;
 import depth.mvp.ns.domain.user_point.domain.repository.UserPointRepository;
 import depth.mvp.ns.domain.theme.domain.Theme;
@@ -11,7 +12,6 @@ import depth.mvp.ns.domain.theme.domain.repository.ThemeRepository;
 import depth.mvp.ns.domain.theme.dto.response.ThemeDetailRes;
 import depth.mvp.ns.domain.theme.dto.response.ThemeLikeRes;
 import depth.mvp.ns.domain.theme.dto.response.ThemeListRes;
-import depth.mvp.ns.domain.theme.dto.response.TodayThemeRes;
 import depth.mvp.ns.domain.theme_like.domain.ThemeLike;
 import depth.mvp.ns.domain.theme_like.domain.repository.ThemeLikeRepository;
 import depth.mvp.ns.domain.user.domain.User;
@@ -54,18 +54,28 @@ public class ThemeService {
         Theme theme = themeRepository.findByDate(LocalDate.now())
                 .orElseThrow(() -> new DefaultException(ErrorCode.CONTENTS_NOT_FOUND, "주제를 찾을 수 없습니다."));
 
-        // 회원인지 여부에 따른 처리
+        return getThemeResponse(theme, customUserDetails);
+    }
+
+    // 지난 주제 조회
+    public ResponseEntity<?> getPastTheme(@CurrentUser CustomUserDetails customUserDetails, Long themeId) {
+        Theme theme = validateTheme(themeId);
+
+        return getThemeResponse(theme, customUserDetails);
+    }
+
+    // 주제 정보 가져와서 응답 생성하는 메서드
+    private ResponseEntity<?> getThemeResponse(Theme theme, CustomUserDetails customUserDetails) {
         Long userId = null;
         boolean likedTheme = false; // 주제 좋아요 여부
 
-        // 주제에 대한 좋아요 여부 확인하고 응답값 넘겨주기
-        if(customUserDetails != null){
+        if (customUserDetails != null) {
             User user = validateUser(customUserDetails.getId());
             userId = user.getId();
             likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
         }
 
-        TodayThemeRes todayThemeRes = TodayThemeRes.builder()
+        ThemeRes themeRes = ThemeRes.builder()
                 .themeId(theme.getId())
                 .content(theme.getContent())
                 .userId(userId)
@@ -74,7 +84,7 @@ public class ThemeService {
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
-                .information(todayThemeRes)
+                .information(themeRes)
                 .build();
 
         return ResponseEntity.ok(apiResponse);

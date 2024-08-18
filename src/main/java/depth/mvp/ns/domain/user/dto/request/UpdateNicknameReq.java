@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class UpdateNicknameReq {
 
     @NotBlank
-    @Pattern(regexp = "^[가-힣]{1,10}$",
-            message = "한글 1~10글자 이내로 입력해주세요.")
+    @Pattern(regexp = "^[가-힣]{1,8}$",
+            message = "한글 1~8글자 이내로 입력해주세요.")
     private String nickname;
 }

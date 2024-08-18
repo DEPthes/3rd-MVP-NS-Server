@@ -18,6 +18,7 @@ public class Board extends BaseEntity {
 
     private String title;
 
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     private boolean isPublished = false;
