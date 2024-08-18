@@ -213,6 +213,7 @@ public class ThemeService {
                 .pageInfo(pageInfo)
                 .userId(userId)
                 .likedTheme(likedTheme)
+                .themeId(theme.getId())
                 .content(theme.getContent())
                 .date(theme.getDate())
                 .likeCount(themeRepository.countLikesByThemeId(themeId))
