@@ -23,6 +23,7 @@ import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.payload.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.openkoreantext.processor.KoreanTokenJava;
 import org.openkoreantext.processor.OpenKoreanTextProcessorJava;
 import org.openkoreantext.processor.tokenizer.KoreanTokenizer;
@@ -43,6 +44,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -61,6 +63,15 @@ public class ReportService {
 
     public ResponseEntity<?> findReport(CustomUserDetails customUserDetails, LocalDate parsedDate) {
         Optional<Theme> optionalTheme = themeRepository.findByDate(parsedDate);
+        LocalDate today = LocalDate.now();
+
+        if (optionalTheme.isEmpty() && parsedDate.equals(today)) {
+            ApiResponse apiResponse = ApiResponse.builder()
+                    .check(false)
+                    .information("No theme found for the given date.")
+                    .build();
+            return ResponseEntity.ok(apiResponse);
+        }
 
         if (optionalTheme.isEmpty()) {
             ApiResponse apiResponse = ApiResponse.builder()
@@ -71,11 +82,12 @@ public class ReportService {
         }
 
         Theme theme = optionalTheme.get();
+        log.info("Theme found: {}", theme.getContent());
 
 
         Optional<Report> optionalReport = reportRepository.findByTheme(theme);
 
-        if (optionalReport.isEmpty()) {
+        if (optionalReport.isEmpty() && parsedDate.equals(today) ) {
             // 오늘자 레포트 조회
 
             int writtenTotal = reportRepository.getBoardCount(theme);
@@ -102,14 +114,28 @@ public class ReportService {
         } else {
             // 과거 레포트 조회
 
+            Report report = null;
 
-            Report report = optionalReport.get();
+            if (optionalReport.isPresent()) {
+                log.info("Existing report found for theme: {}", theme.getContent());
+
+                report = optionalReport.get();
+                // 나머지 로직 계속 진행...
+
+            }
             Board longestBoardByTheme = boardRepository.findLongestBoardByTheme(theme);
             User user = longestBoardByTheme.getUser();
 
 
             List<ReportDetail> allBestReportTypeByReport = reportDetailRepository.findAllBestReportTypeByReport(report);
+            log.info("Number of best report details found: {}", allBestReportTypeByReport.size());
 
+            if (allBestReportTypeByReport.isEmpty()) {
+                log.warn("No best report details found for the given report.");
+            }else {
+                allBestReportTypeByReport.forEach(detail -> {
+                    log.info("ReportDetail found: ReportType={}, UserId={}", detail.getReportType(), detail.getUser().getId());
+                });}
 
             Long bestSelectedCountByUserId = customUserDetails != null
                     ? reportDetailRepository.findBestSelectedCountByUserId(customUserDetails.getId())
@@ -118,6 +144,8 @@ public class ReportService {
 
 
             int writtenTotal = reportRepository.getBoardCount(theme);
+            log.info("Total written count: {}", writtenTotal);
+
 
 
             List<PrevReportRes.BestPost> bestPosts = allBestReportTypeByReport.stream()
@@ -128,24 +156,42 @@ public class ReportService {
                         boolean isCurrentUser = customUserDetails != null && customUserDetails.getId().equals(reportDetail.getUser().getId());
 
 
+                        Long bestSelectedCountByUserId1 = reportDetailRepository.findBestSelectedCountByUserId(reportDetail.getUser().getId());
+
+                        Long boardId = reportDetail.getBoard().getId(); // BEST로 선정된 게시글의 ID
+                        boolean isLiked = customUserDetails != null && boardRepository.isBoardLikedByUser(boardId, customUserDetails.getId());
+
+
+
+                        int likeCount = boardRepository.countLikesByBoardId(reportDetail.getBoard().getId());
+                        long likeCount2 = likeCount;
+
                         if (mostLikedBoardInfo == null) {
+                            log.warn("No valid title found for user: {}", reportDetail.getUser().getNickname());
+
                             return PrevReportRes.BestPost.builder()
                                     .isCurrentUser(isCurrentUser)
                                     .userId(reportDetail.getUser().getId())
                                     .nickname(reportDetail.getUser().getNickname())
                                     .imageUrl(reportDetail.getUser().getImageUrl())
                                     .title("유효한 제목 없음.")
-                                    .likeCount(0L)
+                                    .likeCount(likeCount2)
+                                    .bestSelectionCount(bestSelectedCountByUserId1)
+                                    .boardCreatedAt(reportDetail.getBoard().getCreatedDate())
+                                    .boardId(reportDetail.getBoard().getId())
+                                    .isLiked(isLiked)
                                     .build();
                         }
 
 
 
 
-                        Long likeCount = mostLikedBoardInfo.get(6, Long.class);
+
                         String title = mostLikedBoardInfo.get(1, String.class);
                         LocalDateTime localDateTime = mostLikedBoardInfo.get(2, LocalDateTime.class);
-                        Long boardId = mostLikedBoardInfo.get(3, Long.class);
+
+
+                        log.info("Best post found: title={}, likes={}, user={}", title, likeCount, reportDetail.getUser().getNickname());
 
 
 
@@ -156,13 +202,18 @@ public class ReportService {
                                 .nickname(reportDetail.getUser().getNickname())
                                 .imageUrl(reportDetail.getUser().getImageUrl())
                                 .title(title)
-                                .likeCount(likeCount)
-                                .bestSelectionCount(bestSelectedCountByUserId)
+                                .likeCount(likeCount2)
+                                .bestSelectionCount(bestSelectedCountByUserId1)
                                 .boardCreatedAt(reportDetail.getBoard().getCreatedDate())
                                 .boardId(reportDetail.getBoard().getId())
+                                .isLiked(isLiked)
                                 .build();
+
                     })
                     .collect(Collectors.toList());
+
+            log.info("Total best posts found: {}", bestPosts.size());
+
 
             return ResponseEntity.ok(PrevReportRes.builder()
                     .selectedDate(parsedDate)

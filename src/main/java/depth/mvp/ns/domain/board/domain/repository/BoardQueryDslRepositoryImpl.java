@@ -174,4 +174,22 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
                 boardListResList
         );
     }
+
+    @Override
+    public boolean isBoardLikedByUser(Long boardId, Long userId) {
+        if (userId == null) {
+            return false;
+        }
+        Integer count = queryFactory
+                .selectOne()
+                .from(boardLike)
+                .where(
+                        boardLike.board.id.eq(boardId),
+                        boardLike.user.id.eq(userId),
+                        boardLike.status.eq(Status.ACTIVE)
+                )
+                .fetchFirst();
+
+        return count != null;
+    }
 }

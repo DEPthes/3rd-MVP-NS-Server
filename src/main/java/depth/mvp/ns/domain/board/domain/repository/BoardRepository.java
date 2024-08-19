@@ -67,6 +67,11 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
 
     List<Board> findByUser(User user);
 
+    @Query("SELECT COUNT(bl) > 0 FROM BoardLike bl WHERE bl.board.id = :boardId AND bl.user.id = :userId")
+    boolean isBoardLikedByUser(@Param("boardId") Long boardId, @Param("userId") Long userId);
+
+
+
 
 
 }

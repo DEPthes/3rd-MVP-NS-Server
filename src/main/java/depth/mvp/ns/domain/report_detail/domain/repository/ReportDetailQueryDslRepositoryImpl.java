@@ -1,5 +1,6 @@
 package depth.mvp.ns.domain.report_detail.domain.repository;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import depth.mvp.ns.domain.report.domain.Report;
 import depth.mvp.ns.domain.report_detail.domain.ReportDetail;
@@ -19,10 +20,18 @@ public class ReportDetailQueryDslRepositoryImpl implements ReportDetailQueryDslR
 
     @Override
     public List<ReportDetail> findAllBestReportTypeByReport(Report report) {
+
+        BooleanExpression predicate;
+        if (report != null) {
+            predicate = reportDetail.report.eq(report);
+        } else {
+            predicate = reportDetail.report.isNull();  // Null일 경우를 대비한 처리
+        }
+
         return queryFactory
                 .select(reportDetail)
                 .from(reportDetail)
-                .where(reportDetail.report.eq(report),
+                .where(predicate,
                         reportDetail.reportType.eq(ReportType.BEST))
                 .fetch();
     }
