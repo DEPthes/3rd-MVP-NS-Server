@@ -18,10 +18,11 @@ public class BoardDetailRes {
     private String themeContent; // 주제 내용
     private String boardTitle; // 게시글 제목
     private String boardContent; // 게시글 내용
+    private boolean published;
 
     @Builder
     public BoardDetailRes(Long userId, boolean owner, boolean likedBoard, boolean likedTheme, String nickname,
-                          String imageUrl, Long themeId, String themeContent, String boardTitle, String boardContent){
+                          String imageUrl, Long themeId, String themeContent, String boardTitle, String boardContent, boolean published){
         this.userId = userId;
         this.owner = owner;
         this.likedBoard = likedBoard;
@@ -32,5 +33,6 @@ public class BoardDetailRes {
         this.themeContent = themeContent;
         this.boardTitle = boardTitle;
         this.boardContent = boardContent;
+        this.published = published;
     }
 }
