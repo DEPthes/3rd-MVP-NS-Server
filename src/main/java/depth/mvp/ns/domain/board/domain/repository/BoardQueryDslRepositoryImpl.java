@@ -159,7 +159,8 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
                 .from(board)
                 .leftJoin(boardLike)
                 .on(board.id.eq(boardLike.board.id))
-                .where(board.user.id.eq(user.getId()))
+                .where(board.user.id.eq(user.getId()),
+                        board.isPublished.eq(true))
                 .groupBy(board.id, board.title, board.content)
                 .orderBy(board.createdDate.desc())
                 .offset(offset)
