@@ -5,6 +5,7 @@ import depth.mvp.ns.domain.s3.service.S3Uploader;
 import depth.mvp.ns.domain.user.domain.RankingType;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.domain.repository.UserRepository;
+import depth.mvp.ns.domain.user.dto.UserProfileWithPageInfoRes;
 import depth.mvp.ns.domain.user.dto.request.CheckPasswordReq;
 import depth.mvp.ns.domain.user.dto.request.UpdateNicknameReq;
 import depth.mvp.ns.domain.user.dto.response.MyPageRes;
@@ -15,6 +16,7 @@ import depth.mvp.ns.global.config.security.token.CurrentUser;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
 import depth.mvp.ns.global.payload.ApiResponse;
 import depth.mvp.ns.global.payload.DefaultAssert;
+import depth.mvp.ns.global.payload.PageInfo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -134,17 +136,20 @@ public class UserService {
         int pageSize = 5;
         int offset = (page - 1) * pageSize;
 
-
         UserProfileRes userProfileRes = boardRepository.findBoardListByUser(user, currentUserId, pageSize, offset);
+        int totalElements = boardRepository.countByUser(user);
 
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        PageInfo pageInfo = new PageInfo(page, pageSize, totalElements, totalPages);
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
-                .information(userProfileRes)
+                .information(new UserProfileWithPageInfoRes(userProfileRes, pageInfo))
                 .build();
 
         return ResponseEntity.ok(apiResponse);
     }
+
 
     // 추가된 메서드: 닉네임으로 사용자 정보 조회
     public ResponseEntity<?> getUInfoByNickname(Long userId, String nickname) {
