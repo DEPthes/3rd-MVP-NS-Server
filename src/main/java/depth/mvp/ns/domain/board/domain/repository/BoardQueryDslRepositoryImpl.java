@@ -2,6 +2,9 @@ package depth.mvp.ns.domain.board.domain.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import depth.mvp.ns.domain.board.domain.Board;
@@ -17,6 +20,7 @@ import depth.mvp.ns.domain.user.dto.response.UserProfileRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -91,49 +95,66 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
 
     }
 
-    @Override
-    public UserProfileRes findByUserId(Long userId) {
-        User user = queryFactory
-                .selectFrom(QUser.user)
-                .where(QUser.user.id.eq(userId))
-                .fetchOne();
+//    @Override
+//    public UserProfileRes findByUserId(Long userId) {
+//        User user = queryFactory
+//                .selectFrom(QUser.user)
+//                .where(QUser.user.id.eq(userId))
+//                .fetchOne();
+//
+//        if (user == null) {
+//            return null;
+//        }
+//
+//        List<UserProfileRes.BoardListRes> boardListResList = queryFactory
+//                .select(new QUserProfileRes_BoardListRes(
+//                        QBoard.board.id,
+//                        QBoard.board.title,
+//                        QBoard.board.content,
+//                        boardLike.count()
+//                ))
+//                .from(QBoard.board)
+//                .leftJoin(boardLike).on(QBoard.board.id.eq(boardLike.board.id))
+//                .where(QBoard.board.user.id.eq(userId))
+//                .groupBy(QBoard.board.id, QBoard.board.title, QBoard.board.content)
+//                .orderBy(QBoard.board.createdDate.desc())
+//                .limit(3)
+//                .fetch();
+//
+//        return new UserProfileRes(
+//                user.getId(),
+//                user.getNickname(),
+//                user.getImageUrl(),
+//                boardListResList
+//        );
+//    }
 
-        if (user == null) {
-            return null;
+    @Override
+    public UserProfileRes findBoardListByUser(User user, Long currentUserId) {
+
+        List<Long> likedBoardIds = new ArrayList<>();
+
+
+        if (currentUserId != null) {
+            likedBoardIds = queryFactory
+                    .select(boardLike.board.id)
+                    .from(boardLike)
+                    .where(boardLike.user.id.eq(currentUserId))
+                    .fetch();
         }
 
-        List<UserProfileRes.BoardListRes> boardListResList = queryFactory
-                .select(new QUserProfileRes_BoardListRes(
-                        QBoard.board.id,
-                        QBoard.board.title,
-                        QBoard.board.content,
-                        boardLike.count()
-                ))
-                .from(QBoard.board)
-                .leftJoin(boardLike).on(QBoard.board.id.eq(boardLike.board.id))
-                .where(QBoard.board.user.id.eq(userId))
-                .groupBy(QBoard.board.id, QBoard.board.title, QBoard.board.content)
-                .orderBy(QBoard.board.createdDate.desc())
-                .limit(3)
-                .fetch();
+        QBoard board = QBoard.board;
+        QBoardLike boardLike = QBoardLike.boardLike;
 
-        return new UserProfileRes(
-                user.getId(),
-                user.getNickname(),
-                user.getImageUrl(),
-                boardListResList
-        );
-    }
-
-    @Override
-    public UserProfileRes findBoardListByUser(User user) {
+        BooleanExpression isLikedExpression = currentUserId != null ? board.id.in(likedBoardIds) : Expressions.FALSE;
 
         List<UserProfileRes.BoardListRes> boardListResList = queryFactory
                 .select(new QUserProfileRes_BoardListRes(
                         board.id,
                         board.title,
                         board.content,
-                        boardLike.id.count()
+                        boardLike.id.count(),
+                        isLikedExpression
                 ))
                 .from(board)
                 .leftJoin(boardLike)

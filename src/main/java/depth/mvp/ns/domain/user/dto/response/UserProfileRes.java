@@ -28,15 +28,17 @@ public record UserProfileRes(
             Long boardId,
             String title,
             String content,
-            Long likeCount
+            Long likeCount,
+            boolean isLiked
     ) {
 
         @QueryProjection
-        public BoardListRes(Long boardId, String title, String content, Long likeCount) {
+        public BoardListRes(Long boardId, String title, String content, Long likeCount, boolean isLiked) {
             this.boardId = boardId;
             this.title = title;
             this.content = content;
             this.likeCount = likeCount;
+            this.isLiked = isLiked;
         }
     }
 

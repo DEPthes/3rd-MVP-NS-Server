@@ -127,18 +127,12 @@ public class UserService {
         return userRepository.getNRankingDesc(id, type);
     }
 
-    // 추가된 메서드: 사용자 프로필 정보 조회
-    public ResponseEntity<?> getProfile(Long userId) {
+    public ResponseEntity<?> getProfile(Long userId, Long currentUserId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(EntityNotFoundException::new);
 
-//        MyPageRes myPageRes = MyPageRes.builder()
-//                .userId(userId)
-//                .nickname(user.getNickname())
-//                .imageUrl(user.getImageUrl())
-//                .build();
 
-        UserProfileRes userProfileRes = boardRepository.findBoardListByUser(user);
+        UserProfileRes userProfileRes = boardRepository.findBoardListByUser(user, currentUserId);
 
 
         ApiResponse apiResponse = ApiResponse.builder()

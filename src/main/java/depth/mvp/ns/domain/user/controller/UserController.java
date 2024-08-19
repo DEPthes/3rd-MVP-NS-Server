@@ -62,8 +62,14 @@ public class UserController {
     }
 
     @GetMapping("/profile/{userId}")
-    public ResponseEntity<?> getUserProfile(@PathVariable(required = true) Long userId) {
-        return userService.getProfile(userId);
+    public ResponseEntity<?> getUserProfile(
+            @CurrentUser CustomUserDetails customUserDetails,
+            @PathVariable(required = true) Long userId
+    ) {
+        if (customUserDetails != null) {
+            return userService.getProfile(userId, customUserDetails.getId());
+        }
+        return userService.getProfile(userId, null);
     }
 
     @GetMapping("/nickname")
