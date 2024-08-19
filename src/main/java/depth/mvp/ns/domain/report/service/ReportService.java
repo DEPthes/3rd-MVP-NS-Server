@@ -102,36 +102,27 @@ public class ReportService {
         } else {
             // 과거 레포트 조회
 
-            System.out.println("Report found for the theme: " + theme.getContent());
 
             Report report = optionalReport.get();
             Board longestBoardByTheme = boardRepository.findLongestBoardByTheme(theme);
             User user = longestBoardByTheme.getUser();
-            System.out.println("Longest board user: " + user.getNickname());
 
 
             List<ReportDetail> allBestReportTypeByReport = reportDetailRepository.findAllBestReportTypeByReport(report);
-            System.out.println("Number of best report details found: " + allBestReportTypeByReport.size());
-            for (int i = 0; i < allBestReportTypeByReport.size(); i++) {
-                System.out.println("allBestReportTypeByReport = " + allBestReportTypeByReport.get(i));
-            }
 
 
             Long bestSelectedCountByUserId = customUserDetails != null
                     ? reportDetailRepository.findBestSelectedCountByUserId(customUserDetails.getId())
-                    : null;
+                    : 0;
 
-            System.out.println("Best selection count for user: " + bestSelectedCountByUserId);
 
 
             int writtenTotal = reportRepository.getBoardCount(theme);
-            System.out.println("Written total: " + writtenTotal);
 
 
             List<PrevReportRes.BestPost> bestPosts = allBestReportTypeByReport.stream()
                     .map(reportDetail -> {
                         Tuple mostLikedBoardInfo = boardRepository.findMostLikedBoardCountAndTitleWithUserAndTheme(reportDetail.getUser(), theme);
-                        System.out.println("Most liked board info: " + (mostLikedBoardInfo != null ? mostLikedBoardInfo.toString() : "None"));
 
 
                         boolean isCurrentUser = customUserDetails != null && customUserDetails.getId().equals(reportDetail.getUser().getId());
@@ -156,10 +147,7 @@ public class ReportService {
                         LocalDateTime localDateTime = mostLikedBoardInfo.get(2, LocalDateTime.class);
                         Long boardId = mostLikedBoardInfo.get(3, Long.class);
 
-                        System.out.println("Like count: " + likeCount);
-                        System.out.println("Title: " + title);
-                        System.out.println("Board created at: " + localDateTime);
-                        System.out.println("Board ID: " + boardId);
+
 
 
                         return PrevReportRes.BestPost.builder()

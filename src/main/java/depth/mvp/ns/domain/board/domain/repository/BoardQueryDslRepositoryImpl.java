@@ -130,7 +130,7 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
 //    }
 
     @Override
-    public UserProfileRes findBoardListByUser(User user, Long currentUserId) {
+    public UserProfileRes findBoardListByUser(User user, Long currentUserId, int pageSize, int offset) {
 
         List<Long> likedBoardIds = new ArrayList<>();
 
@@ -162,7 +162,8 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
                 .where(board.user.id.eq(user.getId()))
                 .groupBy(board.id, board.title, board.content)
                 .orderBy(board.createdDate.desc())
-                .limit(3)
+                .offset(offset)
+                .limit(pageSize)
                 .fetch();
 
         return new UserProfileRes(

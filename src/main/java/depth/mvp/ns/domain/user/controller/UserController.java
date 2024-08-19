@@ -64,12 +64,13 @@ public class UserController {
     @GetMapping("/profile/{userId}")
     public ResponseEntity<?> getUserProfile(
             @CurrentUser CustomUserDetails customUserDetails,
-            @PathVariable(required = true) Long userId
+            @PathVariable(required = true) Long userId,
+            @RequestParam(defaultValue = "1") int page
     ) {
         if (customUserDetails != null) {
-            return userService.getProfile(userId, customUserDetails.getId());
+            return userService.getProfile(userId, customUserDetails.getId(), page);
         }
-        return userService.getProfile(userId, null);
+        return userService.getProfile(userId, null, page);
     }
 
     @GetMapping("/nickname")

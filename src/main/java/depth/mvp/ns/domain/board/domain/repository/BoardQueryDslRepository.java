@@ -17,5 +17,5 @@ public interface BoardQueryDslRepository {
 
 //    UserProfileRes findByUserId(Long userId);
 
-    UserProfileRes findBoardListByUser(User user, Long currentUserId);
+    UserProfileRes findBoardListByUser(User user, Long currentUserId, int pageSize, int offset);
 }
