@@ -305,6 +305,7 @@ public class BoardService {
                 .themeContent(board.getTheme().getContent())
                 .boardTitle(board.getTitle())
                 .boardContent(board.getContent())
+                .published(board.isPublished())
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
