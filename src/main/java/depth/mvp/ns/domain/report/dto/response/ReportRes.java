@@ -1,11 +1,13 @@
 package depth.mvp.ns.domain.report.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 
 import java.time.LocalDate;
 
 @Builder
 public record ReportRes(
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDate selectedDate,
         String themeName,
         int writtenTotal,

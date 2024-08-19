@@ -1,5 +1,6 @@
 package depth.mvp.ns.domain.user.service;
 
+import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.s3.service.S3Uploader;
 import depth.mvp.ns.domain.user.domain.RankingType;
 import depth.mvp.ns.domain.user.domain.User;
@@ -8,6 +9,7 @@ import depth.mvp.ns.domain.user.dto.request.CheckPasswordReq;
 import depth.mvp.ns.domain.user.dto.request.UpdateNicknameReq;
 import depth.mvp.ns.domain.user.dto.response.MyPageRes;
 import depth.mvp.ns.domain.user.dto.response.UserInfoByNicknameRes;
+import depth.mvp.ns.domain.user.dto.response.UserProfileRes;
 import depth.mvp.ns.domain.user.dto.response.UserRankingRes;
 import depth.mvp.ns.global.config.security.token.CurrentUser;
 import depth.mvp.ns.global.config.security.token.CustomUserDetails;
@@ -34,6 +36,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final S3Uploader s3Uploader;
     private final PasswordEncoder passwordEncoder;
+    private final BoardRepository boardRepository;
 
     // 마이페이지 내 정보 조회
     public ResponseEntity<?> getMyInfo(CustomUserDetails customUserDetails) {
@@ -124,20 +127,17 @@ public class UserService {
         return userRepository.getNRankingDesc(id, type);
     }
 
-    // 추가된 메서드: 사용자 프로필 정보 조회
-    public ResponseEntity<?> getProfile(Long userId) {
+    public ResponseEntity<?> getProfile(Long userId, Long currentUserId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(EntityNotFoundException::new);
 
-        MyPageRes myPageRes = MyPageRes.builder()
-                .userId(userId)
-                .nickname(user.getNickname())
-                .imageUrl(user.getImageUrl())
-                .build();
+
+        UserProfileRes userProfileRes = boardRepository.findBoardListByUser(user, currentUserId);
+
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
-                .information(myPageRes)
+                .information(userProfileRes)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
