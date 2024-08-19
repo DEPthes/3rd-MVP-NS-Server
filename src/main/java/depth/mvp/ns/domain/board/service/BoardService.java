@@ -237,7 +237,7 @@ public class BoardService {
             user.addPoint(score);
             board.getUser().addPoint(score);
             // 포인트 내역 삭제
-            LocalDate date = boardLike.getCreatedDate().toLocalDate();
+            LocalDate date = boardLike.getModifiedDate().toLocalDate();
             deletePointHistory(user, date, Math.abs(score));
             deletePointHistory(board.getUser(), date, Math.abs(score));
 
