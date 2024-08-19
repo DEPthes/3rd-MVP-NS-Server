@@ -127,12 +127,15 @@ public class UserService {
         return userRepository.getNRankingDesc(id, type);
     }
 
-    public ResponseEntity<?> getProfile(Long userId, Long currentUserId) {
+    public ResponseEntity<?> getProfile(Long userId, Long currentUserId, int page) {
         User user = userRepository.findById(userId)
                 .orElseThrow(EntityNotFoundException::new);
 
+        int pageSize = 5;
+        int offset = (page - 1) * pageSize;
 
-        UserProfileRes userProfileRes = boardRepository.findBoardListByUser(user, currentUserId);
+
+        UserProfileRes userProfileRes = boardRepository.findBoardListByUser(user, currentUserId, pageSize, offset);
 
 
         ApiResponse apiResponse = ApiResponse.builder()
