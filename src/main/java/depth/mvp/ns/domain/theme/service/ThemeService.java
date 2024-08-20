@@ -241,31 +241,50 @@ public class ThemeService {
 
     // 주제 목록 조회
     public ResponseEntity<?> getThemeList(CustomUserDetails customUserDetails, Pageable pageable, String sortBy) {
-        Page<Theme> themePage = getThemesBySortOrder(pageable, sortBy);
-        return buildThemeListResponse(themePage, customUserDetails);
-    }
+        Page<Theme> themePage;
 
-    // 주제 검색
-    public ResponseEntity<?> searchTheme(CustomUserDetails customUserDetails, String keyword, Pageable pageable, String sortBy) {
-        Page<Theme> themePage = themeRepository.findByContentContaining(keyword, pageable);
-        themePage = getThemesBySortOrder(pageable, sortBy);
-        return buildThemeListResponse(themePage, customUserDetails);
-    }
-    // 정렬 기준에 따라 주제 목록을 반환하는 메서드
-    private Page<Theme> getThemesBySortOrder(Pageable pageable, String sortBy) {
         switch (sortBy) {
             case "likeCount":
-                return themeRepository.findAllOrderByLikeCount(pageable);
+                themePage = themeRepository.findAllOrderByLikeCount(pageable);
+                break;
             case "boardCount":
-                return themeRepository.findAllOrderByBoardCount(pageable);
+                themePage = themeRepository.findAllOrderByBoardCount(pageable);
+                break;
             case "date":
-                return themeRepository.findAllByOrderByDateDesc(pageable);
+                themePage = themeRepository.findAllByOrderByDateDesc(pageable);
+                break;
             default:
                 Errors errors = new BindException(sortBy, "sortBy");
                 errors.rejectValue("sortBy", "invalid", "잘못된 정렬 파라미터입니다.");
                 throw new InvalidParameterException(errors);
         }
+
+        return buildThemeListResponse(themePage, customUserDetails);
     }
+
+    // 주제 검색
+    public ResponseEntity<?> searchTheme(CustomUserDetails customUserDetails, String keyword, Pageable pageable, String sortBy) {
+        Page<Theme> themePage;
+
+        switch (sortBy) {
+            case "likeCount":
+                themePage = themeRepository.searchByContentWithLikeCount(keyword, pageable);
+                break;
+            case "boardCount":
+                themePage = themeRepository.searchByContentWithBoardCount(keyword, pageable);
+                break;
+            case "date":
+                themePage = themeRepository.searchByContentWithDate(keyword, pageable);
+                break;
+            default:
+                Errors errors = new BindException(sortBy, "sortBy");
+                errors.rejectValue("sortBy", "invalid", "잘못된 정렬 파라미터입니다.");
+                throw new InvalidParameterException(errors);
+        }
+
+        return buildThemeListResponse(themePage, customUserDetails);
+    }
+
 
     // 주제 목록 처리 & 응답을 반환하는 메소드
     private ResponseEntity<ApiResponse> buildThemeListResponse(Page<Theme> themePage, CustomUserDetails customUserDetails) {
