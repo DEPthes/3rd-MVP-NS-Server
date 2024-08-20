@@ -168,10 +168,10 @@ public class ThemeService {
 
         switch (sortBy) {
             case "likeCount":
-                boardPage = boardRepository.findByThemeIdOrderByLikeCount(themeId, pageable);
+                boardPage = boardRepository.findByThemeIdAndIsPublishedTrueOrderByLikeCount(themeId, pageable);
                 break;
             case "date":
-                boardPage = boardRepository.findByThemeIdOrderByDate(themeId, pageable);
+                boardPage = boardRepository.findByThemeIdAndIsPublishedTrueOrderByDate(themeId, pageable);
                 break;
             default:
                 Errors errors = new BindException(sortBy, "sortBy");

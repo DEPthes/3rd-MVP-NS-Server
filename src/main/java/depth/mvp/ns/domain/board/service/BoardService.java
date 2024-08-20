@@ -5,6 +5,7 @@ import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.board.dto.request.PublishReq;
 import depth.mvp.ns.domain.board.dto.request.SaveDraftReq;
 import depth.mvp.ns.domain.board.dto.request.UpdateReq;
+import depth.mvp.ns.domain.board.dto.response.SaveBoardRes;
 import depth.mvp.ns.domain.board.dto.response.BoardLikeRes;
 import depth.mvp.ns.domain.board_like.domain.BoardLike;
 import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
@@ -61,9 +62,14 @@ public class BoardService {
 
         boardRepository.save(board);
 
+        SaveBoardRes saveBoardRes = SaveBoardRes.builder()
+                .message("임시 저장이 완료되었습니다.")
+                .boardId(board.getId())
+                .build();
+
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
-                .information("임시 저장이 완료되었습니다.")
+                .information(saveBoardRes)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
