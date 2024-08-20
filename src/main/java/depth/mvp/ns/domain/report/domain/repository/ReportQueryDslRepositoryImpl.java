@@ -23,7 +23,8 @@ public class ReportQueryDslRepositoryImpl implements ReportQueryDslRepository {
         Long count = queryFactory
                 .select(board.count())
                 .from(board)
-                .where(board.theme.eq(theme))
+                .where(board.theme.eq(theme),
+                        board.isPublished.eq(true))
                 .fetchOne();
 
         return count != null ? count.intValue() : 0;
