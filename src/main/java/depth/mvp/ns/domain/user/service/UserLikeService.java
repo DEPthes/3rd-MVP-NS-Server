@@ -96,7 +96,10 @@ public class UserLikeService {
                 boardLikeByUserResList.sort(Comparator.comparing(BoardLikeByUserRes::getCreatedDate, Comparator.reverseOrder()));
                 break;
             case "like":
-                boardLikeByUserResList.sort(Comparator.comparing(BoardLikeByUserRes::getCountLike, Comparator.reverseOrder()));
+                boardLikeByUserResList.sort(
+                        Comparator.comparing(BoardLikeByUserRes::getCountLike, Comparator.reverseOrder())
+                                .thenComparing(BoardLikeByUserRes::getCreatedDate, Comparator.reverseOrder())
+                );
                 break;
             default:
                 throw new InvalidParameterException("잘못된 요청 파라미터입니다.");
@@ -233,10 +236,16 @@ public class UserLikeService {
                 themeLikeByUserResList.sort(Comparator.comparing(ThemeLikeByUserRes::getDate, Comparator.reverseOrder()));
                 break;
             case "like":
-                themeLikeByUserResList.sort(Comparator.comparing(ThemeLikeByUserRes::getCountLike, Comparator.reverseOrder()));
+                themeLikeByUserResList.sort(
+                        Comparator.comparing(ThemeLikeByUserRes::getCountLike, Comparator.reverseOrder())
+                                .thenComparing(ThemeLikeByUserRes::getDate, Comparator.reverseOrder())
+                );
                 break;
             case "board":
-                themeLikeByUserResList.sort(Comparator.comparing(ThemeLikeByUserRes::getCountBoard, Comparator.reverseOrder()));
+                themeLikeByUserResList.sort(
+                        Comparator.comparing(ThemeLikeByUserRes::getCountBoard, Comparator.reverseOrder())
+                                .thenComparing(ThemeLikeByUserRes::getDate, Comparator.reverseOrder())
+                );
                 break;
             default:
                 throw new InvalidParameterException("잘못된 요청 파라미터입니다.");
@@ -324,7 +333,10 @@ public class UserLikeService {
                 break;
             case "like":
                 myBoardResList = sortByLike(user, filterDrafts, null);
-                myBoardResList.sort(Comparator.comparing(MyBoardRes::getCountLike, Comparator.reverseOrder()));
+                myBoardResList.sort(
+                        Comparator.comparing(MyBoardRes::getCountLike, Comparator.reverseOrder())
+                                .thenComparing(MyBoardRes::getCreatedDate, Comparator.reverseOrder())
+                );
                 myBoardResList = applyPagination(myBoardResList, page, size);
                 break;
             default:
@@ -364,8 +376,10 @@ public class UserLikeService {
                 break;
             case "like":
                 myBoardResList = sortByLike(user, filterDrafts, keyword);
-                myBoardResList.sort(Comparator.comparing(MyBoardRes::getCountLike, Comparator.reverseOrder())
-                        .thenComparing(MyBoardRes::getCreatedDate, Comparator.reverseOrder()));
+                myBoardResList.sort(
+                        Comparator.comparing(MyBoardRes::getCountLike, Comparator.reverseOrder())
+                                .thenComparing(MyBoardRes::getCreatedDate, Comparator.reverseOrder())
+                );
                 myBoardResList = applyPagination(myBoardResList, page, size);
                 break;
             default:
