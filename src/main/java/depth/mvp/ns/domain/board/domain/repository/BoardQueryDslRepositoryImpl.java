@@ -52,7 +52,8 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
         return queryFactory
                 .select(board)
                 .from(board)
-                .where(board.theme.eq(theme))
+                .where(board.theme.eq(theme),
+                        board.isPublished.eq(true))
                 .limit(1)
                 .orderBy(board.length.desc())
                 .fetchOne();
