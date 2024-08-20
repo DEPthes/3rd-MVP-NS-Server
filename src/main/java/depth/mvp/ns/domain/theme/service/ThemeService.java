@@ -263,8 +263,25 @@ public class ThemeService {
     }
 
     // 주제 검색
-    public ResponseEntity<?> searchTheme(CustomUserDetails customUserDetails, String keyword,Pageable pageable) {
+    public ResponseEntity<?> searchTheme(CustomUserDetails customUserDetails, String keyword, Pageable pageable, String sortBy) {
         Page<Theme> themePage = themeRepository.findByContentContaining(keyword, pageable);
+
+        switch (sortBy) {
+            case "likeCount":
+                themePage = themeRepository.findAllOrderByLikeCount(pageable);
+                break;
+            case "boardCount":
+                themePage = themeRepository.findAllOrderByBoardCount(pageable);
+                break;
+            case "date":
+                themePage = themeRepository.findAllByOrderByDateDesc(pageable);
+                break;
+            default:
+                Errors errors = new BindException(sortBy, "sortBy");
+                errors.rejectValue("sortBy", "invalid", "잘못된 정렬 파라미터입니다.");
+                throw new InvalidParameterException(errors);
+        }
+
         return buildThemeListResponse(themePage, customUserDetails);
     }
 

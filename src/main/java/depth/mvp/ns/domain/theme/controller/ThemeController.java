@@ -44,9 +44,10 @@ public class ThemeController {
             @CurrentUser CustomUserDetails customUserDetails,
             @RequestParam String keyword,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "5") int size){
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "date") String sortBy){
         Pageable pageable = PageRequest.of(page - 1, size);
-        return themeService.searchTheme(customUserDetails, keyword, pageable);
+        return themeService.searchTheme(customUserDetails, keyword, pageable, sortBy);
     }
 
 
