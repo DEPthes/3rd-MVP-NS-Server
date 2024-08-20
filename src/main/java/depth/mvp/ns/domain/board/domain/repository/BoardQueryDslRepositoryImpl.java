@@ -130,7 +130,7 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
 //    }
 
     @Override
-    public UserProfileRes findBoardListByUser(User user, Long currentUserId) {
+    public UserProfileRes findBoardListByUser(User user, Long currentUserId, int pageSize, int offset) {
 
         List<Long> likedBoardIds = new ArrayList<>();
 
@@ -159,10 +159,12 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
                 .from(board)
                 .leftJoin(boardLike)
                 .on(board.id.eq(boardLike.board.id))
-                .where(board.user.id.eq(user.getId()))
+                .where(board.user.id.eq(user.getId()),
+                        board.isPublished.eq(true))
                 .groupBy(board.id, board.title, board.content)
                 .orderBy(board.createdDate.desc())
-                .limit(3)
+                .offset(offset)
+                .limit(pageSize)
                 .fetch();
 
         return new UserProfileRes(
@@ -171,5 +173,23 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
                 user.getImageUrl(),
                 boardListResList
         );
+    }
+
+    @Override
+    public boolean isBoardLikedByUser(Long boardId, Long userId) {
+        if (userId == null) {
+            return false;
+        }
+        Integer count = queryFactory
+                .selectOne()
+                .from(boardLike)
+                .where(
+                        boardLike.board.id.eq(boardId),
+                        boardLike.user.id.eq(userId),
+                        boardLike.status.eq(Status.ACTIVE)
+                )
+                .fetchFirst();
+
+        return count != null;
     }
 }

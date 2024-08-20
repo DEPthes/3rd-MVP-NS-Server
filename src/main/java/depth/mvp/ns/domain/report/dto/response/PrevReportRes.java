@@ -30,7 +30,8 @@ public record PrevReportRes(
             Long bestSelectionCount,
             Long boardId,
             @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-            LocalDateTime boardCreatedAt
+            LocalDateTime boardCreatedAt,
+            boolean isLiked
     ) {
     }
 }
