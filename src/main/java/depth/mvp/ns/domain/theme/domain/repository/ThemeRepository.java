@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface ThemeRepository extends JpaRepository<Theme, Long> {
     Optional<Theme> findByDate(LocalDate data);
 
-    @Query("SELECT COUNT(b) FROM Board b WHERE b.theme.id = :themeId")
+    @Query("SELECT COUNT(b) FROM Board b WHERE b.theme.id = :themeId AND b.isPublished = true ")
     int countBoardsByThemeId(@Param("themeId") Long themeId);
 
     @Query("SELECT COUNT(l) FROM ThemeLike l WHERE l.theme.id = :themeId AND l.status = 'ACTIVE'")
@@ -27,7 +27,7 @@ public interface ThemeRepository extends JpaRepository<Theme, Long> {
     @Query("SELECT t FROM Theme t ORDER BY (SELECT COUNT(l) FROM ThemeLike l WHERE l.theme = t AND l.status = 'ACTIVE') DESC")
     Page<Theme> findAllOrderByLikeCount(Pageable pageable);
 
-    @Query("SELECT t FROM Theme t ORDER BY (SELECT COUNT(b) FROM Board b WHERE b.theme = t) DESC")
+    @Query("SELECT t FROM Theme t ORDER BY (SELECT COUNT(b) FROM Board b WHERE b.theme = t AND b.isPublished = true) DESC")
     Page<Theme> findAllOrderByBoardCount(Pageable pageable);
 
     @Query("SELECT t FROM Theme t WHERE t.content LIKE %:keyword% ORDER BY t.date DESC")
@@ -36,7 +36,7 @@ public interface ThemeRepository extends JpaRepository<Theme, Long> {
     @Query("SELECT t FROM Theme t WHERE t.content LIKE %:keyword% ORDER BY (SELECT COUNT(l) FROM ThemeLike l WHERE l.theme = t AND l.status = 'ACTIVE') DESC")
     Page<Theme> searchByContentWithLikeCount(@Param("keyword") String keyword, Pageable pageable);
 
-    @Query("SELECT t FROM Theme t WHERE t.content LIKE %:keyword% ORDER BY (SELECT COUNT(b) FROM Board b WHERE b.theme = t) DESC")
+    @Query("SELECT t FROM Theme t WHERE t.content LIKE %:keyword% ORDER BY (SELECT COUNT(b) FROM Board b WHERE b.theme = t AND b.isPublished = true) DESC")
     Page<Theme> searchByContentWithBoardCount(@Param("keyword") String keyword, Pageable pageable);
 
 }
