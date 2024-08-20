@@ -13,7 +13,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryDslRepository {
-    List<Board> findByTheme(Theme theme);
+    @Query("SELECT b FROM Board b WHERE b.theme = :theme AND b.isPublished = true")
+    List<Board> findByTheme(@Param("theme") Theme theme);
 
     @Query("SELECT COUNT(l) FROM BoardLike l WHERE l.board.id = :boardId AND l.status = 'ACTIVE'")
     int countLikesByBoardId(@Param("boardId") Long boardId);

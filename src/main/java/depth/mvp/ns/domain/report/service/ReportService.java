@@ -192,7 +192,6 @@ public class ReportService {
 
 
                         String title = mostLikedBoardInfo.get(1, String.class);
-                        LocalDateTime localDateTime = mostLikedBoardInfo.get(2, LocalDateTime.class);
 
 
                         log.info("Best post found: title={}, likes={}, user={}", title, likeCount, reportDetail.getUser().getNickname());
