@@ -364,7 +364,8 @@ public class UserLikeService {
                 break;
             case "like":
                 myBoardResList = sortByLike(user, filterDrafts, keyword);
-                myBoardResList.sort(Comparator.comparing(MyBoardRes::getCountLike, Comparator.reverseOrder()));
+                myBoardResList.sort(Comparator.comparing(MyBoardRes::getCountLike, Comparator.reverseOrder())
+                        .thenComparing(MyBoardRes::getCreatedDate, Comparator.reverseOrder()));
                 myBoardResList = applyPagination(myBoardResList, page, size);
                 break;
             default:
