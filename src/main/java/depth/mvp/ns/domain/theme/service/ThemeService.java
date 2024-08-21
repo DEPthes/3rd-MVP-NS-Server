@@ -242,16 +242,18 @@ public class ThemeService {
     // 주제 목록 조회
     public ResponseEntity<?> getThemeList(CustomUserDetails customUserDetails, Pageable pageable, String sortBy) {
         Page<Theme> themePage;
+        // 이전 주제만 나오게 하기
+        LocalDate today = LocalDate.now();
 
         switch (sortBy) {
             case "likeCount":
-                themePage = themeRepository.findAllOrderByLikeCount(pageable);
+                themePage = themeRepository.findAllByDateBeforeOrderByLikeCount(today, pageable);
                 break;
             case "boardCount":
-                themePage = themeRepository.findAllOrderByBoardCount(pageable);
+                themePage = themeRepository.findAllByDateBeforeOrderByBoardCount(today, pageable);
                 break;
             case "date":
-                themePage = themeRepository.findAllByOrderByDateDesc(pageable);
+                themePage = themeRepository.findByDateBeforeOrderByDateDesc(today, pageable);
                 break;
             default:
                 Errors errors = new BindException(sortBy, "sortBy");
@@ -265,16 +267,17 @@ public class ThemeService {
     // 주제 검색
     public ResponseEntity<?> searchTheme(CustomUserDetails customUserDetails, String keyword, Pageable pageable, String sortBy) {
         Page<Theme> themePage;
+        LocalDate today = LocalDate.now();
 
         switch (sortBy) {
             case "likeCount":
-                themePage = themeRepository.searchByContentWithLikeCount(keyword, pageable);
+                themePage = themeRepository.searchByContentBeforeDate(keyword, today, pageable);
                 break;
             case "boardCount":
-                themePage = themeRepository.searchByContentWithBoardCount(keyword, pageable);
+                themePage = themeRepository.searchByContentBeforeDateWithLikeCount(keyword, today, pageable);
                 break;
             case "date":
-                themePage = themeRepository.searchByContentWithDate(keyword, pageable);
+                themePage = themeRepository.searchByContentBeforeDateWithBoardCount(keyword, today, pageable);
                 break;
             default:
                 Errors errors = new BindException(sortBy, "sortBy");
