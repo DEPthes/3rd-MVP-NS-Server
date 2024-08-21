@@ -11,6 +11,8 @@ import depth.mvp.ns.domain.board.dto.response.BoardLikeRes;
 import depth.mvp.ns.domain.board_like.domain.BoardLike;
 import depth.mvp.ns.domain.board_like.domain.repository.BoardLikeRepository;
 import depth.mvp.ns.domain.common.Status;
+import depth.mvp.ns.domain.report_detail.domain.ReportType;
+import depth.mvp.ns.domain.report_detail.domain.repository.ReportDetailRepository;
 import depth.mvp.ns.domain.user_point.domain.UserPoint;
 import depth.mvp.ns.domain.user_point.domain.repository.UserPointRepository;
 import depth.mvp.ns.domain.board.dto.response.BoardDetailRes;
@@ -44,6 +46,7 @@ public class BoardService {
     private final ThemeRepository themeRepository;
     private final UserPointRepository userPointRepository;
     private final ThemeLikeRepository themeLikeRepository;
+    private final ReportDetailRepository reportDetailRepository;
 
     @Transactional
     // 게시글 임시 저장
@@ -300,6 +303,7 @@ public class BoardService {
         boolean owner = false;
         boolean likedBoard = false;
         boolean likedTheme = false;
+        boolean isMyBestBoard = false;
 
         if (customUserDetails != null) {
             User user = validateUser(customUserDetails);
@@ -310,6 +314,10 @@ public class BoardService {
             likedBoard = boardLikeRepository.existsByBoardAndUserAndStatus(board, user, Status.ACTIVE);
             // 사용자가 특정 주제에 좋아요를 눌렀는지 여부 확인
             likedTheme = themeLikeRepository.existsByThemeAndUserAndStatus(theme, user, Status.ACTIVE);
+
+            if (owner) {
+                isMyBestBoard = reportDetailRepository.existsByUserAndBoardAndReportType(user, board, ReportType.BEST);
+            }
         }
 
         BoardDetailRes boardDetailRes = BoardDetailRes.builder()
@@ -324,6 +332,7 @@ public class BoardService {
                 .boardTitle(board.getTitle())
                 .boardContent(board.getContent())
                 .published(board.isPublished())
+                .myBestBoard(isMyBestBoard)
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
