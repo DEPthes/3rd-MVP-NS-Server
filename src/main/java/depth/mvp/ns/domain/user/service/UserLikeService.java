@@ -108,7 +108,7 @@ public class UserLikeService {
 
     // currentLike 기준으로 정렬 및 페이징
     private List<BoardLikeByUserRes> sortBoardByCurrentLike(User user, int page, int size, String keyword) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdDate"));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "modifiedDate"));
         Page<BoardLike> boardLikePage;
         // 조회, 검색 동일한 메소드 사용하므로 keyword 유무로 구분
         if (keyword == null) {
@@ -254,7 +254,7 @@ public class UserLikeService {
 
     // currentLike 기준으로 정렬 및 페이징
     private List<ThemeLikeByUserRes> sortThemeByCurrentLike(User user, int page, int size, String keyword) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdDate"));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "modifiedDate"));
         Page<ThemeLike> themeLikePage;
 
         if (keyword == null) {
