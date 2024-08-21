@@ -188,23 +188,12 @@ public class ReportService {
                         }
 
 
-
-
-
-                        String title = mostLikedBoardInfo.get(1, String.class);
-
-
-                        log.info("Best post found: title={}, likes={}, user={}", title, likeCount, reportDetail.getUser().getNickname());
-
-
-
-
                         return PrevReportRes.BestPost.builder()
                                 .isCurrentUser(isCurrentUser)
                                 .userId(reportDetail.getUser().getId())
                                 .nickname(reportDetail.getUser().getNickname())
                                 .imageUrl(reportDetail.getUser().getImageUrl())
-                                .title(title)
+                                .title(reportDetail.getBoard().getTitle())
                                 .likeCount(likeCount2)
                                 .bestSelectionCount(bestSelectedCountByUserId1)
                                 .boardCreatedAt(reportDetail.getBoard().getCreatedDate())
