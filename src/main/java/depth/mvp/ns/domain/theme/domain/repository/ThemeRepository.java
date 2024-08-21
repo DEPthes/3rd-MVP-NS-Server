@@ -22,29 +22,30 @@ public interface ThemeRepository extends JpaRepository<Theme, Long> {
     @Query("SELECT COUNT(l) FROM ThemeLike l WHERE l.theme.id = :themeId AND l.status = 'ACTIVE'")
     int countLikesByThemeId(@Param("themeId") Long themeId);
 
-    Page<Theme> findByDateBeforeOrderByDateDesc(LocalDate date, Pageable pageable);
 
-    @Query("SELECT t FROM Theme t WHERE t.date < :date ORDER BY (SELECT COUNT(l) FROM ThemeLike l WHERE l.theme = t AND l.status = 'ACTIVE') DESC")
+    Page<Theme> findByDateLessThanEqualOrderByDateDesc(LocalDate date, Pageable pageable);
+
+    @Query("SELECT t FROM Theme t WHERE t.date <= :date ORDER BY (SELECT COUNT(l) FROM ThemeLike l WHERE l.theme = t AND l.status = 'ACTIVE') DESC")
     Page<Theme> findAllByDateBeforeOrderByLikeCount(@Param("date") LocalDate date, Pageable pageable);
 
 
-    @Query("SELECT t FROM Theme t WHERE t.date < :date ORDER BY (SELECT COUNT(b) FROM Board b WHERE b.theme = t AND b.isPublished = true) DESC")
+    @Query("SELECT t FROM Theme t WHERE t.date <= :date ORDER BY (SELECT COUNT(b) FROM Board b WHERE b.theme = t AND b.isPublished = true) DESC")
     Page<Theme> findAllByDateBeforeOrderByBoardCount(@Param("date") LocalDate date, Pageable pageable);
 
-    @Query("SELECT t FROM Theme t WHERE t.content LIKE %:keyword% AND t.date < :date ORDER BY t.date DESC")
+    @Query("SELECT t FROM Theme t WHERE t.content LIKE %:keyword% AND t.date <= :date ORDER BY t.date DESC")
     Page<Theme> searchByContentBeforeDate(@Param("keyword") String keyword, @Param("date") LocalDate date, Pageable pageable);
 
 
     @Query("SELECT t FROM Theme t " +
             "WHERE t.content LIKE %:keyword% " +
-            "AND t.date < :date " +
+            "AND t.date <= :date " +
             "ORDER BY (SELECT COUNT(l) FROM ThemeLike l WHERE l.theme = t AND l.status = 'ACTIVE') DESC")
     Page<Theme> searchByContentBeforeDateWithLikeCount(@Param("keyword") String keyword, @Param("date") LocalDate date, Pageable pageable);
 
 
     @Query("SELECT t FROM Theme t " +
             "WHERE t.content LIKE %:keyword% " +
-            "AND t.date < :date " +
+            "AND t.date <= :date " +
             "ORDER BY (SELECT COUNT(b) FROM Board b WHERE b.theme = t AND b.isPublished = true) DESC")
     Page<Theme> searchByContentBeforeDateWithBoardCount(@Param("keyword") String keyword, @Param("date") LocalDate date, Pageable pageable);
 

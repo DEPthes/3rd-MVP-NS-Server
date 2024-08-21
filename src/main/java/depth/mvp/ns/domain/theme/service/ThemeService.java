@@ -253,7 +253,7 @@ public class ThemeService {
                 themePage = themeRepository.findAllByDateBeforeOrderByBoardCount(today, pageable);
                 break;
             case "date":
-                themePage = themeRepository.findByDateBeforeOrderByDateDesc(today, pageable);
+                themePage = themeRepository.findByDateLessThanEqualOrderByDateDesc(today, pageable);
                 break;
             default:
                 Errors errors = new BindException(sortBy, "sortBy");
