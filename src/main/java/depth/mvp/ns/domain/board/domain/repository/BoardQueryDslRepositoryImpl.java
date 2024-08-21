@@ -20,6 +20,7 @@ import depth.mvp.ns.domain.user.dto.response.UserProfileRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,12 +36,13 @@ public class BoardQueryDslRepositoryImpl implements BoardQueryDslRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<Board> findTop3BoardWithMostLiked() {
+    public List<Board> findTop3BoardWithMostLiked(Theme theme) {
         return queryFactory
                 .select(board)
                 .from(board)
                 .leftJoin(boardLike)
                 .on(board.id.eq(boardLike.board.id))
+                .where(board.theme.eq(theme))
                 .groupBy(board.id)
                 .orderBy(boardLike.count().desc())
                 .limit(3)
