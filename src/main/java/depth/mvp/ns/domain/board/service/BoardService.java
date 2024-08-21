@@ -83,6 +83,9 @@ public class BoardService {
         User user = validateUser(userDetails);
         Theme theme = validateTheme(request.getThemeId());
 
+        boolean isFirstPost = false;
+        boolean isTodayTheme = false;
+
         Board board;
         if (request.getBoardId() != null) {
             // 임시저장된 게시물을 게시할 경우 특정 게시물을 찾고 업데이트
@@ -96,7 +99,6 @@ public class BoardService {
 
         boardRepository.save(board);
 
-        boolean isFirstPost = false;
         // 게시 시 첫 게시글 작성 보너스를 부여
         if (!user.isCompleteFirstPost()) {
             isFirstPost = true;
@@ -111,6 +113,7 @@ public class BoardService {
         LocalDate themeDate = theme.getDate();
 
         if(themeDate.isEqual(today)){
+            isTodayTheme = true;
             user.addPoint(3);
             // 포인트 내역 저장
             savePointHistory(user, 3);
@@ -124,6 +127,7 @@ public class BoardService {
         PublishBoardRes publishBoardRes = PublishBoardRes.builder()
                 .message("게시글이 작성되었습니다.")
                 .firstPost(isFirstPost)
+                .todayTheme(isTodayTheme)
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
