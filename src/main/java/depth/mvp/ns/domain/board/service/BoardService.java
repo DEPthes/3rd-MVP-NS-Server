@@ -5,6 +5,7 @@ import depth.mvp.ns.domain.board.domain.repository.BoardRepository;
 import depth.mvp.ns.domain.board.dto.request.PublishReq;
 import depth.mvp.ns.domain.board.dto.request.SaveDraftReq;
 import depth.mvp.ns.domain.board.dto.request.UpdateReq;
+import depth.mvp.ns.domain.board.dto.response.PublishBoardRes;
 import depth.mvp.ns.domain.board.dto.response.SaveBoardRes;
 import depth.mvp.ns.domain.board.dto.response.BoardLikeRes;
 import depth.mvp.ns.domain.board_like.domain.BoardLike;
@@ -95,8 +96,10 @@ public class BoardService {
 
         boardRepository.save(board);
 
+        boolean isFirstPost = false;
         // 게시 시 첫 게시글 작성 보너스를 부여
         if (!user.isCompleteFirstPost()) {
+            isFirstPost = true;
             user.addPoint(5);
             user.updateCompleteFirstPost(true);
             // 포인트 내역 저장
@@ -118,9 +121,14 @@ public class BoardService {
 
         userRepository.save(user);
 
+        PublishBoardRes publishBoardRes = PublishBoardRes.builder()
+                .message("게시글이 작성되었습니다.")
+                .firstPost(isFirstPost)
+                .build();
+
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
-                .information("게시글이 작성되었습니다.")
+                .information(publishBoardRes)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
