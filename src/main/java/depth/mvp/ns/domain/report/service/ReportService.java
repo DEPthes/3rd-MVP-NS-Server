@@ -65,6 +65,7 @@ public class ReportService {
         Optional<Theme> optionalTheme = themeRepository.findByDate(parsedDate);
         LocalDate today = LocalDate.now();
 
+
         if (optionalTheme.isEmpty() && parsedDate.equals(today)) {
             ApiResponse apiResponse = ApiResponse.builder()
                     .check(false)
@@ -79,6 +80,19 @@ public class ReportService {
                     .information("No theme found for the given date.")
                     .build();
             return ResponseEntity.ok(apiResponse);
+        }
+
+        List<Board> boardList = boardRepository.findByTheme(optionalTheme.get());
+
+        if (boardList.isEmpty()) {
+            ReportRes reportRes = ReportRes.builder()
+                    .selectedDate(parsedDate)
+                    .themeName(optionalTheme.get().getContent())
+                    .writtenTotal(0)
+                    .longestWriter(null)
+                    .build();
+
+            return ResponseEntity.ok(reportRes);
         }
 
         Theme theme = optionalTheme.get();
