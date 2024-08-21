@@ -6,10 +6,11 @@ import depth.mvp.ns.domain.theme.domain.Theme;
 import depth.mvp.ns.domain.user.domain.User;
 import depth.mvp.ns.domain.user.dto.response.UserProfileRes;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface BoardQueryDslRepository {
-    List<Board> findTop3BoardWithMostLiked();
+    List<Board> findTop3BoardWithMostLiked(Theme theme);
 
     Board findLongestBoardByTheme(Theme theme);
 
