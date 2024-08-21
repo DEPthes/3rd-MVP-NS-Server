@@ -16,6 +16,7 @@ public class WordCount {
     @Column(name = "wordcount_id")
     private Long id;
 
+    @Column(columnDefinition = "TEXT")
     private String word;
 
     private int count;
