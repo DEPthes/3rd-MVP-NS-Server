@@ -166,6 +166,11 @@ public class BoardService {
         User user = validateUser(userDetails);
         Board board = validateBoard(boardId);
 
+        // 연결된 boardLike 삭제
+        List<BoardLike> boardLikeList = boardLikeRepository.findByBoard(board);
+        boardLikeRepository.deleteAll(boardLikeList);
+
+        // board 삭제
         boardRepository.delete(board);
 
         ApiResponse apiResponse = ApiResponse.builder()
