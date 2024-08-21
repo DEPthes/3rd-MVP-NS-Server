@@ -90,9 +90,10 @@ public class ReportService {
         if (optionalReport.isEmpty() && parsedDate.equals(today) ) {
             // 오늘자 레포트 조회
 
+
             int writtenTotal = reportRepository.getBoardCount(theme);
             Board longestBoardByTheme = boardRepository.findLongestBoardByTheme(theme);
-
+            System.out.println("longestBoardByTheme.getUser().getId() = " + longestBoardByTheme.getUser().getId());
 
             ReportRes.LongestWriter longestWriter = null;
             if (longestBoardByTheme != null && longestBoardByTheme.getUser() != null) {
@@ -124,7 +125,6 @@ public class ReportService {
                 log.info("Existing report found for theme: {}", theme.getContent());
 
                 report = optionalReport.get();
-                // 나머지 로직 계속 진행...
 
             }
             Board longestBoardByTheme = boardRepository.findLongestBoardByTheme(theme);
@@ -327,7 +327,7 @@ public class ReportService {
         }
 
         // 가장 좋아요 많이 받은 top3 게시글 저장
-        List<Board> top3BoardWithMostLiked = boardRepository.findTop3BoardWithMostLiked();
+        List<Board> top3BoardWithMostLiked = boardRepository.findTop3BoardWithMostLiked(theme);
 
         // 베스트 게시글 선정 포인트 각 +5점
         top3BoardWithMostLiked.stream().map(
