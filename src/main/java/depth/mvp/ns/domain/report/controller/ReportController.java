@@ -17,7 +17,8 @@ public class ReportController {
 
     private final ReportService reportService;
 
-    @Scheduled(cron = "0 59 23 * * ?")
+//    @Scheduled(cron = "0 59 23 * * ?")
+    @PostMapping
     public void generateReport() {
         reportService.generateNReport();
     }
